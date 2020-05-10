@@ -1,4 +1,4 @@
-drop schema issue_tracking;
+DROP SCHEMA issue_tracking;
 
 CREATE DATABASE issue_tracking;
 USE issue_tracking;
@@ -8,12 +8,13 @@ CREATE TABLE user (
   user_email varchar(40) UNIQUE NOT NULL ,
   user_name varchar(40) UNIQUE NOT NULL,
   user_alias varchar(40) NOT NULL,
-  user_password varchar(40) NOT NULL,
-  create_date datetime NOT NULL,
+  user_password binary(60) NOT NULL,
+  create_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY (user_email, user_name)
   PRIMARY KEY (user_id)
 );
 
-insert into user(user_email,user_name, user_alias, user_password, create_date) values 
+INSERT INTO user(user_email, user_name, user_alias, user_password, create_date) VALUES
 ('user1@email.com','test_user_1','user1', 'user_password1','2020-01-01 10:10:10'),
 ('user2@email.com','test_user_2','user2','user_password2','2020-01-02 10:10:10'),
 ('user3@email.com','test_user_3','user3', 'user_password3','2020-01-03 10:10:10'),
@@ -34,12 +35,13 @@ CREATE TABLE project (
   creator_id int NOT NULL,
   project_name varchar(40) NOT NULL,
   project_description varchar(150) NOT NULL,
-  create_date datetime NOT NULL,  
-  CONSTRAINT project_fk_creator_id FOREIGN KEY (creator_id) REFERENCES user (user_id),   
+  create_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT project_uk_creator_project UNIQUE KEY (creator_id, project_name),
+  CONSTRAINT project_fk_creator_id FOREIGN KEY (creator_id) REFERENCES user (user_id),
   PRIMARY KEY (project_id)
 );
 
-insert into project(creator_id, project_name, project_description, create_date) values 
+INSERT INTO project(creator_id, project_name, project_description, create_date) VALUES
 (1,'Amazon', 'Start Amazon.','2020-01-01 10:10:11'),
 (2,'Apple', 'Start Apple.','2020-01-02 10:10:11'),
 (3,'Facebook', 'Start Facebook.','2020-01-03 10:10:11'),
@@ -50,11 +52,11 @@ CREATE TABLE status (
   status_id int AUTO_INCREMENT NOT NULL,
   project_id int NOT NULL,
   status_name varchar(40) NOT NULL,
-  CONSTRAINT status_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id), 
+  CONSTRAINT status_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),
   PRIMARY KEY (status_id)
 );
 
-insert into status(project_id, status_name) values 
+INSERT INTO status(project_id, status_name) VALUES
 (1,'OPEN'),
 (1,'IN PROGRESS'),
 (1,'UNDER REVIEW'),
@@ -81,14 +83,14 @@ insert into status(project_id, status_name) values
 
 CREATE TABLE special_status (
   status_id int NOT NULL,
-  project_id int NOT NULL,  
+  project_id int NOT NULL,
   status_type ENUM('OPEN','CLOSED') NOT NULL,
   CONSTRAINT special_status_fk_status_id FOREIGN KEY (status_id) REFERENCES status (status_id),
-  CONSTRAINT special_status_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),    
-  PRIMARY KEY (project_id,status_type)
+  CONSTRAINT special_status_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),
+  PRIMARY KEY (project_id, status_type)
 );
 
-insert into special_status(status_id,project_id,status_type) values 
+INSERT INTO special_status(status_id, project_id, status_type) VALUES
 (1,1,'OPEN'),
 (5,1,'CLOSED'),
 
@@ -109,11 +111,11 @@ CREATE TABLE transition (
   end_status_id int NOT NULL,
   CONSTRAINT transition_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),
   CONSTRAINT transition_fk_start_status_id FOREIGN KEY (start_status_id) REFERENCES status (status_id),
-  CONSTRAINT transition_fk_end_status_id FOREIGN KEY (end_status_id) REFERENCES status (status_id),     
+  CONSTRAINT transition_fk_end_status_id FOREIGN KEY (end_status_id) REFERENCES status (status_id),
   PRIMARY KEY (transition_id)
 );
 
-insert into transition(project_id,start_status_id,end_status_id) values 
+INSERT INTO transition(project_id,start_status_id,end_status_id) VALUES
 (1,1,2),
 (1,2,3),
 (1,3,4),
@@ -153,14 +155,14 @@ CREATE TABLE issue (
   current_status_id int NOT NULL,
   issue_title varchar(40) NOT NULL,
   issue_description varchar(150) NOT NULL,
-  create_date datetime NOT NULL,
-  CONSTRAINT issue_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id), 
-  CONSTRAINT issue_fk_reporter_id FOREIGN KEY (reporter_id) REFERENCES user (user_id), 
-  CONSTRAINT issue_fk_current_status_id FOREIGN KEY (current_status_id) REFERENCES status (status_id), 
+  create_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT issue_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),
+  CONSTRAINT issue_fk_reporter_id FOREIGN KEY (reporter_id) REFERENCES user (user_id),
+  CONSTRAINT issue_fk_current_status_id FOREIGN KEY (current_status_id) REFERENCES status (status_id),
   PRIMARY KEY (issue_id)
 );
 
-insert into issue(project_id, reporter_id, current_status_id, issue_title, issue_description, create_date) values 
+INSERT INTO issue(project_id, reporter_id, current_status_id, issue_title, issue_description, create_date) VALUES
 (1,1,1,'Amazon issue 1', 'Amazon has some issues.', '2020-01-01 10:10:12'),
 (2,2,6,'Apple issue 1', 'Apple has some issues.', '2020-01-02 10:10:12'),
 (3,3,11,'Facebook issue 1', 'Facebook has some issues.', '2020-01-03 10:10:12'),
@@ -171,33 +173,32 @@ CREATE TABLE grant_lead (
   grantor_id int NOT NULL,
   grantee_id int NOT NULL,
   project_id int NOT NULL,
-  grant_date datetime NOT NULL,
+  grant_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT grant_lead_fk_grantor_id FOREIGN KEY (grantor_id) REFERENCES user (user_id),
   CONSTRAINT grant_lead_fk_grantee_id FOREIGN KEY (grantee_id) REFERENCES user (user_id),
-  CONSTRAINT grant_lead_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),     
+  CONSTRAINT grant_lead_fk_project_id FOREIGN KEY (project_id) REFERENCES project (project_id),
   PRIMARY KEY (grantee_id, project_id)
 );
 
-insert into grant_lead(grantor_id,grantee_id,project_id,grant_date) values
+INSERT INTO grant_lead(grantor_id, grantee_id, project_id, grant_date) VALUES
 (1,5,1,'2020-01-01 10:10:13'),
 (2,6,2,'2020-01-02 10:10:13'),
 (3,7,3,'2020-01-03 10:10:13'),
 (4,8,4,'2020-01-04 10:10:13');
 
 
-
 CREATE TABLE assign_issue (
   assignor_id int NOT NULL,
   assignee_id int NOT NULL,
   issue_id int NOT NULL,
-  assign_date datetime NOT NULL,
+  assign_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT assign_issue_fk_assignor_id FOREIGN KEY (assignor_id) REFERENCES user (user_id),
   CONSTRAINT assign_issue_fk_assignee_id FOREIGN KEY (assignee_id) REFERENCES user (user_id),
-  CONSTRAINT assign_issue_fk_issue_id FOREIGN KEY (issue_id) REFERENCES issue (issue_id),     
+  CONSTRAINT assign_issue_fk_issue_id FOREIGN KEY (issue_id) REFERENCES issue (issue_id),
   PRIMARY KEY (assignee_id, issue_id)
 );
 
-insert into assign_issue(assignor_id,assignee_id,issue_id,assign_date) values
+INSERT INTO assign_issue(assignor_id, assignee_id, issue_id, assign_date) VALUES
 (5,9,1,'2020-01-01 10:10:14'),
 (6,10,2,'2020-01-02 10:10:14'),
 (7,11,3,'2020-01-03 10:10:14'),
@@ -207,14 +208,14 @@ CREATE TABLE issue_status_history (
   issue_id int NOT NULL,
   assignee_id int NOT NULL,
   transition_id int NOT NULL,
-  done_date datetime NOT NULL,
+  done_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT issue_status_history_fk_issue_id FOREIGN KEY (issue_id) REFERENCES issue (issue_id),
   CONSTRAINT issue_status_history_fk_assignee_id FOREIGN KEY (assignee_id) REFERENCES user (user_id),
-  CONSTRAINT issue_status_history_fk_transition_id FOREIGN KEY (transition_id) REFERENCES transition (transition_id),     
+  CONSTRAINT issue_status_history_fk_transition_id FOREIGN KEY (transition_id) REFERENCES transition (transition_id),
   PRIMARY KEY (issue_id, assignee_id, transition_id, done_date)
 );
 
-insert into issue_status_history(issue_id, assignee_id, transition_id, done_date) values 
+INSERT INTO issue_status_history(issue_id, assignee_id, transition_id, done_date) VALUES
 (1,9,1,'2020-01-01 10:10:15'),
 (1,9,2,'2020-01-01 10:10:16'),
 (1,9,3,'2020-01-01 10:10:17'),
