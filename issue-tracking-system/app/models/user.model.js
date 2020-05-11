@@ -42,8 +42,8 @@ User.findById = (UserId, result) => {
 
 User.updateById = (id, user, result) => {
   sql.query(
-    "UPDATE user SET user_alias = ?, user_password = ?  WHERE user_id = ?",
-    [user.user_alias, user.user_password, id],
+    "UPDATE user SET user_email = ?, user_alias = ?, user_password = ?  WHERE user_id = ?",
+    [user.user_email, user.user_alias, user.user_password, id],
     (err, res) => {
       if (err) {
         console.log("error: ", err);
@@ -79,6 +79,79 @@ User.remove = (id, result) => {
 
     console.log("deleted user with id: ", id);
     result(null, res);
+  });
+};
+
+
+User.grantLead = (grantorId, granteeId, projectId, result) => {
+  sql.query("INSERT INTO grant_lead SET grantor_id = ?, grantee_id = ?, project_id = ?, grant_date = NOW()", 
+    [grantorId, granteeId, projectId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("created grant history: ", { grantorId : grantorId, 
+      granteeId : granteeId, projectId : projectId});
+    result(null, { grantorId : grantorId, 
+      granteeId : granteeId, projectId : projectId});
+  });  
+}
+
+User.assignIssue = (assignorId, assigneeId, issueId, result) => {
+  sql.query("INSERT INTO assign_issue SET assignor_id = ?, assignee_id = ?, issue_id = ?, assign_date = NOW()", 
+    [assignorId, assigneeId, issueId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("created grant history: ", { assignorId : assignorId, 
+      assigneeId : assigneeId, issueId : issueId});
+    result(null, { assignorId : assignorId, 
+      assigneeId : assigneeId, issueId : issueId});
+  });  
+}
+
+User.checkIfGrantee = (granteeId, projectId, result) => {
+  sql.query("SELECT * FROM grant_lead WHERE grantee_id = ? and project_id = ?",
+    [granteeId, projectId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    if (res.length) {
+      console.log("found grantee: ", res[0]);
+      result(null, res[0]);
+      return;
+    }
+
+    // not found user with the id
+    result({ kind: "not_found" }, null);
+  });
+};
+
+User.checkIfAssignee = (assigneeId, issueId, result) => {
+  sql.query("SELECT * FROM assign_issue WHERE assignee_id = ? and issue_id = ?",
+    [assigneeId, issueId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    if (res.length) {
+      console.log("found assignee: ", res[0]);
+      result(null, res[0]);
+      return;
+    }
+    
+    // not found user with the id
+    result({ kind: "not_found" }, null);
   });
 };
 

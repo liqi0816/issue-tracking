@@ -13,4 +13,6 @@ module.exports = app => {
   // Delete a Customer with customerId
   app.delete("/project/:projectId", project.delete);
 
+  app.get("/project/getUserProjects/:userId", project.getUserProjects);
+
 };

@@ -44,8 +44,8 @@ Issue.findById = (IssueId, result) => {
 
 Issue.updateById = (id, issue, result) => {
   sql.query(
-    "UPDATE issue SET issue_title = ?, issue_description = ?  WHERE issue_id = ?",
-    [issue.issue_title, issue.issue_description, id],
+    "UPDATE issue SET issue_title = ?, issue_description = ?, current_status_id = ?  WHERE issue_id = ?",
+    [issue.issue_title, issue.issue_description, issue.current_status_id, id],
     (err, res) => {
       if (err) {
         console.log("error: ", err);

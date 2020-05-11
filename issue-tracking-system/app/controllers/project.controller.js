@@ -55,9 +55,7 @@ exports.update = (req, res) => {
     });
   }
 
-  Project.updateById(
-    req.params.projectId,
-    new Project(req.body),
+  Project.updateById(req.params.projectId, new Project(req.body),
     (err, data) => {
       if (err) {
         if (err.kind === "not_found") {
@@ -91,3 +89,14 @@ exports.delete = (req, res) => {
   });
 };
 
+
+exports.getUserProjects = (req, res) => {
+  Project.getUserProjects(req.params.userId, (err, data) => {
+    if (err)
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while retrieving."
+      });
+    else res.send(data);
+  });
+};

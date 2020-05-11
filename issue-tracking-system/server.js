@@ -25,6 +25,7 @@ require("./app/routes/customer.routes.js")(app);
 require("./app/routes/user.routes.js")(app);
 require("./app/routes/login.routes.js")(app);
 require("./app/routes/project.routes.js")(app);
+require("./app/routes/status.routes.js")(app);
 require("./app/routes/issue.routes.js")(app);
 
 // set port, listen for requests

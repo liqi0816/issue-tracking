@@ -41,7 +41,7 @@ Project.findById = (projectId, result) => {
 
 Project.updateById = (id, project, result) => {
   sql.query(
-    "UPDATE project SET project_name = ?, project_description = ?  WHERE project = ?",
+    "UPDATE project SET project_name = ?, project_description = ?  WHERE project_id = ?",
     [project.project_name, project.project_description, id],
     (err, res) => {
       if (err) {
@@ -80,5 +80,21 @@ Project.remove = (id, result) => {
     result(null, res);
   });
 };
+
+Project.getUserProjects = (userId , result) => {
+  sql.query("select b.* from grant_lead a join project b on a.project_id = b.project_id where a.grantee_id = ? or b.creator_id = ?",
+    [userId, userId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("projects involved: ", res);
+    result(null, res);
+
+  });
+};
+
 
 module.exports = Project;

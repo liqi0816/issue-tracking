@@ -56,10 +56,7 @@ exports.update = (req, res) => {
     });
   }
 
-  User.updateById(
-    req.params.userId,
-    new User(req.body),
-    (err, data) => {
+  User.updateById(req.params.userId, new User(req.body),(err, data) => {
       if (err) {
         if (err.kind === "not_found") {
           res.status(404).send({
@@ -92,3 +89,56 @@ exports.delete = (req, res) => {
   });
 };
 
+exports.grantLead = (req, res) => {
+  User.grantLead(req.params.grantorId,req.params.granteeId,req.params.projectId, (err, data) => {
+    if (err)
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while creating."
+      });
+    else res.send(data);
+  });
+};
+
+exports.assignIssue = (req, res) => {
+  User.assignIssue(req.params.assignorId,req.params.assigneeId,req.params.issueId, (err, data) => {
+    if (err)
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while creating."
+      });
+    else res.send(data);
+  });
+};
+
+exports.checkIfGrantee = (req, res) => {
+  User.checkIfGrantee(req.params.granteeId,req.params.projectId,(err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Grantee with id ${req.params.granteeId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving Grantee with id " + req.params.granteeId
+        });
+      }
+    } else res.send(data);
+  });
+};
+
+exports.checkIfAssignee = (req, res) => {
+  User.checkIfAssignee(req.params.assigneeId,req.params.issueId,(err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Assignee with id ${req.params.assigneeId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving Assignee with id " + req.params.assigneeId
+        });
+      }
+    } else res.send(data);
+  });
+};
