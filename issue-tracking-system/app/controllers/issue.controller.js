@@ -1,7 +1,7 @@
 const Issue = require("../models/issue.model.js");
 
 // Create and Save a new Issue
-exports.create = (req, res) => {
+exports.createIssue = (req, res) => {
   // Validate request
   if (!req.body) {
     res.status(400).send({
@@ -20,7 +20,7 @@ exports.create = (req, res) => {
   });
 
   // Save Issue in the database
-  Issue.create(issue, (err, data) => {
+  Issue.createIssue(issue, (err, data) => {
     if (err)
       res.status(500).send({
         message:
@@ -31,8 +31,8 @@ exports.create = (req, res) => {
 };
 
 // Find a single Issue with a issueId
-exports.findOne = (req, res) => {
-  Issue.findById(req.params.issueId, (err, data) => {
+exports.findIssueById = (req, res) => {
+  Issue.findIssueById(req.params.issueId, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
         res.status(404).send({
@@ -47,8 +47,56 @@ exports.findOne = (req, res) => {
   });
 };
 
+exports.findIssueByProjectId = (req, res) => {
+  Issue.findIssueByProjectId(req.params.projectId, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Issue with project id ${req.params.projectId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving Issue with project id " + req.params.projectId
+        });
+      }
+    } else res.send(data);
+  });
+};
+
+exports.SearchIssueTitle = (req, res) => {
+  Issue.SearchIssueTitle(req.params.projectId,req.params.keyword, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Issue with project id ${req.params.projectId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving Issue with project id " + req.params.projectId
+        });
+      }
+    } else res.send(data);
+  });
+};
+
+exports.SearchIssueDescription = (req, res) => {
+  Issue.SearchIssueDescription(req.params.projectId,req.params.keyword, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Issue with project id ${req.params.projectId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving Issue with project id " + req.params.projectId
+        });
+      }
+    } else res.send(data);
+  });
+};
+
 // Update a Issue identified by the issueId in the request
-exports.update = (req, res) => {
+exports.updateIssueById = (req, res) => {
   // Validate Request
   if (!req.body) {
     res.status(400).send({
@@ -56,7 +104,7 @@ exports.update = (req, res) => {
     });
   }
 
-  Issue.updateById(
+  Issue.updateIssueById(
     req.params.issueId,
     new Issue(req.body),
     (err, data) => {
@@ -75,8 +123,37 @@ exports.update = (req, res) => {
   );
 };
 
+exports.getIssueHistory = (req, res) => {
+  Issue.getIssueHistory(req.params.issueId, (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found History with issue id ${req.params.issueId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving History with issue id " + req.params.issueId
+        });
+      }
+    } else res.send(data);
+  });
+};
+
+// Create and Save a history record
+exports.addIssueHistory = (req, res) => {
+
+  Issue.addIssueHistory(req.params.issueId,req.params.assignee_id,req.params.transition_id, (err, data) => {
+    if (err)
+      res.status(500).send({
+        message:
+          err.message || "Some error occurred while adding the issue history."
+      });
+    else res.send(data);
+  });
+};
+
 // Delete a Issue with the specified issueId in the request
-exports.delete = (req, res) => {
+exports.remove = (req, res) => {
   Issue.remove(req.params.issueId, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {

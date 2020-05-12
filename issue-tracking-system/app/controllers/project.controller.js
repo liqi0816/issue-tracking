@@ -1,7 +1,7 @@
 const Project = require("../models/project.model.js");
 
 // Create and Save a new Project
-exports.create = (req, res) => {
+exports.createProject = (req, res) => {
   // Validate request
   if (!req.body) {
     res.status(400).send({
@@ -19,7 +19,7 @@ exports.create = (req, res) => {
   });
 
   // Save Project in the database
-  Project.create(project, (err, data) => {
+  Project.createProject(project, (err, data) => {
     if (err)
       res.status(500).send({
         message:
@@ -30,8 +30,8 @@ exports.create = (req, res) => {
 };
 
 // Find a single Project with a projectId
-exports.findOne = (req, res) => {
-  Project.findById(req.params.projectId, (err, data) => {
+exports.findProjectById = (req, res) => {
+  Project.findProjectById(req.params.projectId, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
         res.status(404).send({
@@ -47,7 +47,7 @@ exports.findOne = (req, res) => {
 };
 
 // Update a Project identified by the projectId in the request
-exports.update = (req, res) => {
+exports.updateProjectById = (req, res) => {
   // Validate Request
   if (!req.body) {
     res.status(400).send({
@@ -55,7 +55,7 @@ exports.update = (req, res) => {
     });
   }
 
-  Project.updateById(req.params.projectId, new Project(req.body),
+  Project.updateProjectById(req.params.projectId, new Project(req.body),
     (err, data) => {
       if (err) {
         if (err.kind === "not_found") {
@@ -73,7 +73,7 @@ exports.update = (req, res) => {
 };
 
 // Delete a Project with the specified projectId in the request
-exports.delete = (req, res) => {
+exports.remove = (req, res) => {
   Project.remove(req.params.projectId, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {

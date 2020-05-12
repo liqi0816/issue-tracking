@@ -1,7 +1,7 @@
 const User = require("../models/user.model.js");
 
 // Create and Save a new User
-exports.create = (req, res) => {
+exports.createUser = (req, res) => {
   // Validate request
   if (!req.body) {
     res.status(400).send({
@@ -20,7 +20,7 @@ exports.create = (req, res) => {
   });
 
   // Save User in the database
-  User.create(user, (err, data) => {
+  User.createUser(user, (err, data) => {
     if (err)
       res.status(500).send({
         message:
@@ -31,8 +31,8 @@ exports.create = (req, res) => {
 };
 
 // Find a single User with a userId
-exports.findOne = (req, res) => {
-  User.findById(req.params.userId, (err, data) => {
+exports.findUserById = (req, res) => {
+  User.findUserById(req.params.userId, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
         res.status(404).send({
@@ -48,7 +48,7 @@ exports.findOne = (req, res) => {
 };
 
 // Update a User identified by the userId in the request
-exports.update = (req, res) => {
+exports.updateUserById = (req, res) => {
   // Validate Request
   if (!req.body) {
     res.status(400).send({
@@ -56,7 +56,7 @@ exports.update = (req, res) => {
     });
   }
 
-  User.updateById(req.params.userId, new User(req.body),(err, data) => {
+  User.updateUserById(req.params.userId, new User(req.body),(err, data) => {
       if (err) {
         if (err.kind === "not_found") {
           res.status(404).send({
@@ -73,7 +73,7 @@ exports.update = (req, res) => {
 };
 
 // Delete a User with the specified userId in the request
-exports.delete = (req, res) => {
+exports.remove = (req, res) => {
   User.remove(req.params.userId, (err, data) => {
     if (err) {
       if (err.kind === "not_found") {

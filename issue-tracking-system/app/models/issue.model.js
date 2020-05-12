@@ -10,7 +10,7 @@ const Issue = function(issue) {
   this.create_date = issue.create_date;
 };
 
-Issue.create = (newIssue, result) => {
+Issue.createIssue = (newIssue, result) => {
   sql.query("INSERT INTO issue SET ?", newIssue, (err, res) => {
     if (err) {
       console.log("error: ", err);
@@ -23,8 +23,8 @@ Issue.create = (newIssue, result) => {
   });
 };
 
-Issue.findById = (IssueId, result) => {
-  sql.query(`SELECT * FROM issue WHERE issue_id = ${IssueId}`, (err, res) => {
+Issue.findIssueById = (issueId, result) => {
+  sql.query(`SELECT * FROM issue WHERE issue_id = ${issueId}`, (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -42,7 +42,49 @@ Issue.findById = (IssueId, result) => {
   });
 };
 
-Issue.updateById = (id, issue, result) => {
+Issue.findIssueByProjectId = (projectId, result) => {
+  sql.query(`SELECT * FROM issue WHERE project_id = ${projectId}`, (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("issues of project: ", res);
+    result(null, res);
+  });
+};
+
+Issue.SearchIssueTitle = (projectId, keyword, result) => {
+  sql.query(`SELECT * FROM issue WHERE project_id = ? and issue_title like '%${keyword}%'`,
+  [projectId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("result: ", res);
+    result(null, res);
+  });
+};
+
+Issue.SearchIssueDescription = (projectId, keyword, result) => {
+  sql.query(`SELECT * FROM issue WHERE project_id = ? and issue_description like '%${keyword}%'`,
+  [projectId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("result: ", res);
+    result(null, res);
+  });
+};
+
+
+Issue.updateIssueById = (id, issue, result) => {
   sql.query(
     "UPDATE issue SET issue_title = ?, issue_description = ?, current_status_id = ?  WHERE issue_id = ?",
     [issue.issue_title, issue.issue_description, issue.current_status_id, id],
@@ -64,6 +106,36 @@ Issue.updateById = (id, issue, result) => {
     }
   );
 };
+
+Issue.getIssueHistory = (issueId, result) => {
+  sql.query("select a.*, b.assignee_id, b.transition_id, b.done_date from issue a join issue_status_history b on a.issue_id = b.issue_id where a.issue_id = ?",
+  [issueId], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("result: ", res);
+    result(null, res);
+  });
+};
+
+Issue.addIssueHistory = (issueId, assignee_id,transition_id, result) => {
+  sql.query("INSERT INTO issue_status_history SET issue_id = ?, assignee_id = ?, transition_id = ?, done_date = NOW()",
+  [issueId, assignee_id,transition_id], (err, res) => {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+      return;
+    }
+
+    console.log("result: ", res);
+    result(null, res);
+  });
+};
+
+
 
 Issue.remove = (id, result) => {
   sql.query("DELETE FROM issue WHERE issue_id = ?", id, (err, res) => {

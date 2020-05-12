@@ -181,7 +181,7 @@ Status.findTransitionByStartStatusId = (startStatusId, result) => {
 };
 
 Status.findNextStatusOfIssue = (issueId, result) => {
-  sql.query(`select end_status_id from issue a join transition b on a.project_id = b.project_id and a.current_status_id = b.start_status_id where issue_id = ${issueId}`,
+  sql.query(`select * from issue a join transition b on a.project_id = b.project_id and a.current_status_id = b.start_status_id where issue_id = ${issueId}`,
    (err, res) => {
     if (err) {
       console.log("error: ", err);

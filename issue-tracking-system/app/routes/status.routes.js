@@ -7,15 +7,11 @@ module.exports = app => {
  // Create a new special status
   app.post("/status/addSpecialStatus/:statusId/:projectId/:statusType", status.addSpecialStatus);
 
-
   app.get("/status/findStatusById/:statusId", status.findStatusById);
-
 
   app.get("/status/findSpecialStatusById/:statusId", status.findSpecialStatusById);
 
-
   app.get("/status/findStatusByProjectId/:projectId", status.findStatusByProjectId);
-
 
   app.get("/status/findSpecialStatusByProjectId/:projectId", status.findSpecialStatusByProjectId);
 
@@ -31,6 +27,5 @@ module.exports = app => {
   app.get("/status/findTransitionByStartStatusId/:startStatusId", status.findTransitionByStartStatusId);
 
   app.get("/status/findNextStatusOfIssue/:issueId", status.findNextStatusOfIssue);    
-
 
 };

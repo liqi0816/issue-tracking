@@ -2,16 +2,16 @@ module.exports = app => {
   const user = require("../controllers/user.controller.js");
 
   // Create a new Customer
-  app.post("/user", user.create);
+  app.post("/user/createUser", user.createUser);
 
   // Retrieve a single user with userID
-  app.get("/user/:userId", user.findOne);
+  app.get("/user/findUserById/:userId", user.findUserById);
 
   // Update a Customer with customerId
-  app.put("/user/:userId", user.update);
+  app.put("/user/updateUserById/:userId", user.updateUserById);
 
   // Delete a Customer with customerId
-  app.delete("/user/:userId", user.delete);
+  app.delete("/user/remove/:userId", user.remove);
 
   app.post("/user/grantLead/:grantorId/:granteeId/:projectId", user.grantLead)
 

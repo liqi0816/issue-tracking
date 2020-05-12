@@ -2,16 +2,16 @@ module.exports = app => {
   const project = require("../controllers/project.controller.js");
 
   // Create a new Customer
-  app.post("/project", project.create);
+  app.post("/project/createProject", project.createProject);
 
   // Retrieve a single project with projectID
-  app.get("/project/:projectId", project.findOne);
+  app.get("/project/findProjectById/:projectId", project.findProjectById);
 
   // Update a Customer with customerId
-  app.put("/project/:projectId", project.update);
+  app.put("/project/updateProjectById/:projectId", project.updateProjectById);
 
   // Delete a Customer with customerId
-  app.delete("/project/:projectId", project.delete);
+  app.delete("/project/remove/:projectId", project.remove);
 
   app.get("/project/getUserProjects/:userId", project.getUserProjects);
 

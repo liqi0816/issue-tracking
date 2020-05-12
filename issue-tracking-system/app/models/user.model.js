@@ -8,7 +8,7 @@ const User = function(user) {
   this.create_date = user.create_date
 };
 
-User.create = (newUser, result) => {
+User.createUser = (newUser, result) => {
   sql.query("INSERT INTO user SET ?", newUser, (err, res) => {
     if (err) {
       console.log("error: ", err);
@@ -21,7 +21,7 @@ User.create = (newUser, result) => {
   });
 };
 
-User.findById = (UserId, result) => {
+User.findUserById = (UserId, result) => {
   sql.query(`SELECT * FROM user WHERE user_id = ${UserId}`, (err, res) => {
     if (err) {
       console.log("error: ", err);
@@ -40,7 +40,7 @@ User.findById = (UserId, result) => {
   });
 };
 
-User.updateById = (id, user, result) => {
+User.updateUserById = (id, user, result) => {
   sql.query(
     "UPDATE user SET user_email = ?, user_alias = ?, user_password = ?  WHERE user_id = ?",
     [user.user_email, user.user_alias, user.user_password, id],
