@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Issue Tracking</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="light-blue" role="navigation">
+        <div class="nav-wrapper container">
+            <a href="" class="brand-logo">Issue Tracking</a>
+        </div>
+    </nav>
+
+    <div class="section">
+        <form method="POST" class="container" action="/api">
+            <div class="row input-field">
+                <i class="material-icons prefix">folder</i>
+                <input id="project_name" type="text" class="valid" readonly value="Project 1">
+                <label for="project_name">Project</label>
+            </div>
+            <div class="row input-field">
+                <i class="material-icons prefix">error_outline</i>
+                <input id="issue_title" type="text" class="validate" required>
+                <label for="issue_title">Title</label>
+            </div>
+            <div class="row input-field">
+                <i class="material-icons prefix">description</i>
+                <input id="issue_description" type="text" class="validate">
+                <label for="issue_description">Description</label>
+            </div>
+            <div class="row input-field center">
+                <button class="btn waves-effect waves-light" type="submit" name="action">Register
+                    <i class="material-icons right">send</i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+    </script>
+</body>
+
+</html>
