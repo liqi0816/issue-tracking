@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Issue Tracking</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        body {
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="light-blue nav-extended" role="navigation">
+        <div class="nav-wrapper container">
+            <a href="" class="brand-logo">Issue Tracking</a>
+        </div>
+        <div class="nav-content container">
+            <div class="section">
+                <a href="../user/explorer.html" class="breadcrumb">user_name</a>
+                <a href="../project/dashboard.html" class="breadcrumb">project_name</a>
+                <a href="" class="breadcrumb">#1</a>
+            </div>
+        </div>
+        <div class="grey lighten-4 black-text">
+            <div class="nav-content container">
+                <p class="nav-title">issue_title</p>
+                <p class="section">issue_descrpiton</p>
+                <a class="btn-floating btn-large halfway-fab waves-effect waves-light teal">
+                    <i class="material-icons">mode_edit</i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="section">
+        <form method="GET" class="container" action="/api">
+            <div class="row" style="display: flex; align-items: center;">
+                <i class="material-icons">assignment</i>
+                <div style="flex-grow: 100;">
+                    <div id="assignChip" style="overflow: visible;" class="chips chips-autocomplete chips-placeholderv chips-initial"></div>
+                </div>
+                <button class="btn waves-effect waves-light" type="button" name="action">assign</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="section">
+        <ul class="collection container">
+            <li class="collection-item avatar">
+                <i class="material-icons circle green">error_outline</i>
+                <span class="title">Open</span>
+                <p>at create_date</p>
+            </li>
+            <li class="collection-item avatar">
+                <i class="material-icons circle blue">schedule</i>
+                <span class="title">State 1</span>
+                <p>at done_date[0]</p>
+            </li>
+            <li class="collection-item avatar">
+                <i class="material-icons circle">done</i>
+                <span class="title">Closed</span>
+                <p>at done_date[-1]</p>
+            </li>
+        </ul>
+    </div>
+
+    <div class="fixed-action-btn">
+        <a class="btn-floating btn-large light-blue waves-effect waves-light">
+            <i class="large material-icons">mode_edit</i>
+        </a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        M.AutoInit();
+        M.Chips.init(assignChip, {
+            placeholder: 'assign this issue to...',
+            secondaryPlaceholder: '+assignee',
+            autocompleteOptions: {
+                data: {
+                    'user_name[0]': null,
+                    'user_name[1]': null,
+                    'user_name[2]': null,
+                },
+            },
+        });
+    </script>
+</body>
+
+</html>

@@ -11,7 +11,6 @@ interface Issue {
 interface IssueStatusHistory {
     issue_id: number,
     assignee_id: number,
-    start_status_id: number,
-    end_status_id: number,
+    status_id: number,
     done_date: number,
 }
