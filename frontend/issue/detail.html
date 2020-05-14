@@ -18,6 +18,10 @@
     <nav class="light-blue nav-extended" role="navigation">
         <div class="nav-wrapper container">
             <a href="" class="brand-logo">Issue Tracking</a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="./register.html">Explorer</a></li>
+                <li><a href="./register.html">Profile</a></li>
+            </ul>
         </div>
         <div class="nav-content container">
             <div class="section">
@@ -39,7 +43,7 @@
 
     <div class="section">
         <form method="GET" class="container" action="/api">
-            <div class="row" style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center;">
                 <i class="material-icons">assignment</i>
                 <div style="flex-grow: 100;">
                     <div id="assignChip" style="overflow: visible;" class="chips chips-autocomplete chips-placeholderv chips-initial"></div>
@@ -50,23 +54,25 @@
     </div>
 
     <div class="section">
-        <ul class="collection container">
-            <li class="collection-item avatar">
-                <i class="material-icons circle green">error_outline</i>
-                <span class="title">Open</span>
-                <p>at create_date</p>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle blue">schedule</i>
-                <span class="title">State 1</span>
-                <p>at done_date[0]</p>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle">done</i>
-                <span class="title">Closed</span>
-                <p>at done_date[-1]</p>
-            </li>
-        </ul>
+        <div class="container">
+            <div style="display: flex; flex-wrap: wrap;">
+                <div style="flex-grow: 100;">
+                    <ul class="collection">
+                        <li class="collection-item avatar">
+                            <i class="material-icons circle green">error_outline</i>
+                            <span class="title">Open</span>
+                            <p>at create_date</p>
+                        </li>
+                        <li class="collection-item avatar">
+                            <i class="material-icons circle blue">schedule</i>
+                            <span class="title">Assigned</span>
+                            <p>at done_date[0]</p>
+                        </li>
+                    </ul>
+                </div>
+                <img src="./workflow-demo.svg">
+            </div>
+        </div>
     </div>
 
     <div class="fixed-action-btn">
