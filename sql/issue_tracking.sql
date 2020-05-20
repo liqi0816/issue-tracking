@@ -1,4 +1,4 @@
-DROP SCHEMA issue_tracking;
+DROP DATABASE IF EXISTS issue_tracking;
 
 CREATE DATABASE issue_tracking;
 USE issue_tracking;
@@ -10,7 +10,7 @@ CREATE TABLE user (
   user_alias varchar(40) NOT NULL,
   user_password binary(60) NOT NULL,
   create_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY (user_email, user_name)
+  KEY (user_email, user_name),
   PRIMARY KEY (user_id)
 );
 
@@ -36,7 +36,7 @@ CREATE TABLE project (
   project_name varchar(40) NOT NULL,
   project_description varchar(150) NOT NULL,
   create_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT project_uk_creator_project UNIQUE KEY (creator_id, project_name),
+  CONSTRAINT project_uk_creator_project UNIQUE KEY (creator_id, project_name),
   CONSTRAINT project_fk_creator_id FOREIGN KEY (creator_id) REFERENCES user (user_id),
   PRIMARY KEY (project_id)
 );
