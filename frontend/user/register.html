@@ -25,7 +25,7 @@
     </nav>
 
     <div class="section">
-        <form method="POST" class="container" action="/api">
+        <form method="post" class="container" action="/user/createUser" data-method="post">
             <input id="user_id" type="hidden">
             <div class="row input-field">
                 <i class="material-icons prefix">alternate_email</i>
@@ -52,8 +52,9 @@
                 <input id="user_password_repeat" type="password" class="validate" required autocomplete="off">
                 <label for="user_password_repeat">Retype Password</label>
             </div>
+            <input id="create_date" type="hidden">
             <div class="row input-field center">
-                <button class="btn waves-effect waves-light" type="submit" name="action">Register
+                <button class="btn waves-effect waves-light" type="submit">Register
                     <i class="material-icons right">send</i>
                 </button>
             </div>
@@ -61,7 +62,73 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../util.js"></script>
     <script>
+        const form = document.getElementsByTagName('form')[0];
+
+        // update profile
+        (async () => {
+            user_id.value = its.user_id || new URLSearchParams(location.search).get('user_id');
+            if (user_id.value) {
+                const json = await (await fetch(urlTmpl`/user/findUserById/${user_id.value}`, {
+                    headers: headersDefault,
+                })).json();
+                user_email.value = json.user_email;
+                user_name.value = json.user_name;
+                M.updateTextFields();
+                form.action = `/user/updateUserById/${user_id.value}`;
+                form.dataset.method = 'put';
+                document.getElementsByTagName('button')[0].childNodes[0].nodeValue = 'Update';
+            }
+        })();
+
+        // user_password_repeat
+        user_password_repeat.oninput = () => {
+            if (user_password.value !== user_password_repeat.value) {
+                user_password_repeat.setCustomValidity('Password does not match');
+                user_password_repeat.reportValidity();
+            }
+            else {
+                user_password_repeat.setCustomValidity('');
+            }
+        };
+
+        // form onsubmit
+        form.onsubmit = async e => {
+            e.preventDefault();
+
+            create_date.value = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            const body = await fetch(form.action, {
+                method: form.dataset.method,
+                body: new URLSearchParams({
+                    user_id: user_id.value,
+                    user_email: user_email.value,
+                    user_name: user_name.value,
+                    user_alias: user_alias.value,
+                    user_password: user_password.value,
+                    create_date: create_date.value,
+                }),
+                headers: headersDefault,
+            }).catch(() => ({}));
+
+            if (body.ok === false) {
+                const text = await body.text();
+                try {
+                    return M.toast({ html: JSON.parse(text).message });
+                }
+                catch {
+                    return M.toast({ html: text || body.statusText });
+                }
+            }
+            else if (body.ok === undefined) {
+                return M.toast({ html: 'Network Error' });
+            }
+
+            M.toast({ html: 'Success. Going to login...' });
+            await sleep(2000);
+            location.assign('./login.html');
+        }
     </script>
 </body>
 

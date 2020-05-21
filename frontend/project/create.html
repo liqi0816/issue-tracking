@@ -26,7 +26,7 @@
     </nav>
 
     <div class="section">
-        <form method="POST" class="container" action="/api">
+        <form method="post" class="container" action="/project/createProject" data-method="post">
             <input id="project_id" type="hidden">
             <div class="row input-field">
                 <i class="material-icons prefix">folder</i>
@@ -46,16 +46,21 @@
                     <img src="https://mermaid.ink/img/eyJjb2RlIjoiZ3JhcGggVERcbk9wZW4gLS0-IEFzc2lnbmVkXG5Bc3NpZ25lZCAtLT4gQ2xvc2VkXG5cdFx0XHRcdFx0IiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0">
                 </div>
             </div>
+            <input id="create_date" type="hidden">
             <div class="row input-field center">
-                <button class="btn waves-effect waves-light" type="submit" name="action">Register
+                <button class="btn waves-effect waves-light" type="submit">Register
                     <i class="material-icons right">send</i>
                 </button>
             </div>
         </form>
     </div>
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../util.js"></script>
     <script>
+        const form = document.getElementsByTagName('form')[0];
+
+
     </script>
 </body>
 

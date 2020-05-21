@@ -28,46 +28,22 @@
                 <p class="nav-title">user_alias (user_name)</p>
                 <p>@user_id</p>
                 <p>member since create_date</p>
-                <a class="btn-floating btn-large halfway-fab waves-effect waves-light teal">
+                <a class="btn-floating btn-large halfway-fab waves-effect waves-light teal" href="./register.html">
                     <i class="material-icons">mode_edit</i>
                 </a>
             </div>
         </div>
     </nav>
-    
+
     <div class="section"></div>
 
     <div class="section">
         <ul class="collection container">
-            <li class="collection-item avatar">
-                <i class="material-icons circle">folder</i>
-                <span class="title">Project Title 1</span>
-                <p>#1</p>
-                <a class="secondary-content"><i class="material-icons">grade</i></a>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle">folder</i>
-                <span class="title">Project Title 2</span>
-                <p>#2</p>
-                <a class="secondary-content"><i class="material-icons">grade</i></a>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle">folder</i>
-                <span class="title">Project Title 3</span>
-                <p>#3</p>
-                <a class="secondary-content"><i class="material-icons">grade</i></a>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle">folder</i>
-                <span class="title">Project Title 4</span>
-                <p>#4</p>
-                <a class="secondary-content"><i class="material-icons">grade</i></a>
-            </li>
         </ul>
     </div>
 
     <div class="fixed-action-btn">
-        <a class="btn-floating btn-large light-blue waves-effect waves-light">
+        <a class="btn-floating btn-large light-blue waves-effect waves-light" href="../project/create.html">
             <i class="large material-icons">add</i>
         </a>
     </div>
@@ -76,17 +52,41 @@
         <ul class="pagination container">
             <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
             <li class="active blue"><a href="#!">1</a></li>
-            <li class="waves-effect"><a href="#!">2</a></li>
-            <li class="waves-effect"><a href="#!">3</a></li>
-            <li class="waves-effect"><a href="#!">4</a></li>
-            <li class="waves-effect"><a href="#!">5</a></li>
-            <li class="waves-effect"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+            <!-- waves-effect -->
+            <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
         </ul>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../util.js"></script>
     <script>
         M.AutoInit();
+
+        (async () => {
+            const json = await (await fetch(urlTmpl`/user/findUserById/${its.user_id}`, { headers: headersDefault })).json();
+            const { user_name, user_id, user_alias, create_date } = json;
+            document.getElementsByClassName('nav-content')[0].children[0].textContent = user_alias ? `${user_alias} (@${user_name})` : `@${user_name}`;
+            document.getElementsByClassName('nav-content')[0].children[1].textContent = `user#${user_id}`;
+            document.getElementsByClassName('nav-content')[0].children[2].textContent = `member since ${new Date(create_date).toDateString()}`;
+        })();
+
+        (async () => {
+            const json = await (await fetch(urlTmpl`/project/getUserProjects/${its.user_id}`, { headers: headersDefault, })).json();
+            document.getElementsByClassName('collection')[0].innerHTML = (await Promise.all(json.map(async ({ project_id }) => {
+                const json = await (await fetch(urlTmpl`/project/findProjectById/${project_id}`, { headers: headersDefault })).json();
+                const { creator_id, project_name, project_description, create_date } = json;
+                return htmlTmpl`
+                <li class="collection-item avatar">
+                    <a href="../project/dashboard.html?project_id=${project_id}">
+                    <i class="material-icons circle">folder</i>
+                    <span class="title">${project_name}</span>
+                    </a>
+                    <p>project#${project_id} ${new Date(create_date).toDateString()} (${creator_id === its.user_id ? 'creator' : 'contributor'})</p>
+                    <p>${project_description}</p>
+                    <a class="secondary-content"><i class="material-icons">star_outline</i></a>
+                </li>`;
+            }))).join('');
+        })();
     </script>
 </body>
 
