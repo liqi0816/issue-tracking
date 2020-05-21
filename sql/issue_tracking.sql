@@ -15,10 +15,10 @@ CREATE TABLE user (
 );
 
 INSERT INTO user(user_email, user_name, user_alias, user_password, create_date) VALUES
-('user1@email.com','test_user_1','user1', 'user_password1','2020-01-01 10:10:10'),
-('user2@email.com','test_user_2','user2','user_password2','2020-01-02 10:10:10'),
-('user3@email.com','test_user_3','user3', 'user_password3','2020-01-03 10:10:10'),
-('user4@email.com','test_user_4','user4', 'user_password4','2020-01-04 10:10:10'),
+('user1@email.com','test_user_1','user1', AES_DECRYPT('user_password1',"project"),'2020-01-01 10:10:10'),
+('user2@email.com','test_user_2','user2', AES_DECRYPT('user_password2',"project"),'2020-01-02 10:10:10'),
+('user3@email.com','test_user_3','user3', AES_DECRYPT('user_password3',"project"),'2020-01-03 10:10:10'),
+('user4@email.com','test_user_4','user4', AES_DECRYPT('user_password4',"project"),'2020-01-04 10:10:10'),
 
 ('boss@amazon.com','test_user_5','Jeff Bezos', 'amazon_boss_password','2020-01-05 10:10:10'),
 ('boss@apple.com','test_user_6','Steve Jobs', 'apple_boss_password','2020-01-06 10:10:10'),
