@@ -19,14 +19,14 @@
         <div class="nav-wrapper container">
             <a href="" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
-                <li><a href="./register.html">Explorer</a></li>
-                <li><a href="./register.html">Profile</a></li>
+                <li><a href="/frontend/user/explorer.html">Explorer</a></li>
+                <li><a href="/frontend/user/register.html">Profile</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="section">
-        <form method="POST" class="container" action="/api">
+        <form method="post" class="container" action="/project/createProject" data-method="post">
             <input id="project_id" type="hidden">
             <div class="row input-field">
                 <i class="material-icons prefix">folder</i>
@@ -35,19 +35,69 @@
             </div>
             <div class="row input-field">
                 <i class="material-icons prefix">description</i>
-                <input id="project_description" type="text" class="validate">
+                <input id="project_description" type="text" class="validate" required>
                 <label for="project_description">Description</label>
             </div>
             <div class="row input-field">
+                <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap" rel="stylesheet">
+                <style>
+                    .workflow-text {
+                        font-family: 'Ubuntu Mono', monospace;
+                    }
+
+                    .workflow-description code,
+                    .workflow-description pre {
+                        font-family: 'Ubuntu Mono', monospace;
+                    }
+
+                    #project_workflow_hightlighter {
+                        position: absolute;
+                        white-space: pre;
+                        z-index: -1;
+
+                        line-height: normal;
+                        padding: .8rem 0 .8rem 0;
+                        box-sizing: border-box;
+                        font-size: 16px;
+                    }
+
+                    #project_workflow_hightlighter>span.error {
+                        color: red;
+                    }
+
+                    #project_workflow_hightlighter>span.start_status {
+                        color: blue;
+                    }
+
+                    #project_workflow_hightlighter>span.end_status {
+                        color: green;
+                    }
+
+                    #project_workflow_hightlighter>span.start_status_text,
+                    #project_workflow_hightlighter>span.end_status_text {
+                        color: grey;
+                    }
+                </style>
                 <i class="material-icons prefix">description</i>
-                <textarea id="project_workflow" class="validate materialize-textarea">Open --> Assigned&#10;Assigned --> Closed</textarea>
+                <div class="autocomplete-content workflow-text" style="position: relative;">
+                    <div id="project_workflow_hightlighter"></div>
+                </div>
+                <textarea id="project_workflow" class="validate materialize-textarea workflow-text" style="color: transparent; caret-color: black;"></textarea>
                 <label for="project_workflow">Workflow Description</label>
-                <div style="width: 100%;" class="center">
-                    <img src="https://mermaid.ink/img/eyJjb2RlIjoiZ3JhcGggVERcbk9wZW4gLS0-IEFzc2lnbmVkXG5Bc3NpZ25lZCAtLT4gQ2xvc2VkXG5cdFx0XHRcdFx0IiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQifSwidXBkYXRlRWRpdG9yIjpmYWxzZX0">
+                <ol class="workflow-description autocomplete-content">
+                    <li>workflow syntax: <code>start_status[display_text(optional)] --> end_status[display_text(optional)]</code>;</li>
+                    <li>alphanumeric only (<code>[\w\d]+</code>);</li>
+                    <li>there must be one status named <code>open</code> and one named <code>closed</code>, but their display text can be customized;</li>
+                    <li>example:<br><code>open[unassigned] --> assigned</code><br><code>assigned --> closed</code></li>
+                </ol>
+                <div id="project_workflow_preview" style="width: 100%; white-space: pre-line;" class="center">
+                    <p>workflow preview renderer ready</p>
                 </div>
             </div>
+            <input id="create_date" type="hidden">
+            <input id="creator_id" type="hidden">
             <div class="row input-field center">
-                <button class="btn waves-effect waves-light" type="submit" name="action">Register
+                <button class="btn waves-effect waves-light" type="submit">Create
                     <i class="material-icons right">send</i>
                 </button>
             </div>
@@ -55,7 +105,118 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.5.1/mermaid.min.js"></script>
+    <script src="../util.js"></script>
     <script>
+        const form = document.getElementsByTagName('form')[0];
+
+        // flowchart
+        mermaid.initialize({ securityLevel: 'loose' });
+        project_workflow.oninput = async () => {
+            project_workflow.setCustomValidity('invalid workflow description');
+            const registry = { transitions: [], status: {} };
+            project_workflow_hightlighter.innerHTML = project_workflow.value.split(/\r?\n/).map(e => {
+                const groups = /(?<start_status>[\w\d]+)(?:\[(?<start_status_text>[\w\d]+)\])? --> (?<end_status>[\w\d]+)(?:\[(?<end_status_text>[\w\d]+)\])?/.exec(e)?.groups;
+                if (!groups) return htmlTmpl`<span class="error">${e}</span>`;
+
+                const { start_status, start_status_text, end_status, end_status_text } = groups;
+                registry.status[start_status] = start_status_text ?? start_status;
+                registry.status[end_status] = end_status_text ?? end_status;
+                registry.transitions.push([start_status, end_status]);
+
+                return [
+                    htmlTmpl`<span class="start_status">${start_status}</span>`,
+                    start_status_text ? htmlTmpl`<span class="start_status_text">[${start_status_text}]</span>` : '',
+                    htmlTmpl` --> <span class="end_status">${end_status}</span>`,
+                    end_status_text ? htmlTmpl`<span class="end_status_text">[${end_status_text}]</span>` : '',
+                ].join('');
+            }).join('\n');
+
+            if (!registry.status['open']) return [project_workflow_preview.innerHTML = htmlTmpl`<p class="red-text">missing open state</p>`, registry];
+            if (!registry.status['closed']) return [project_workflow_preview.innerHTML = htmlTmpl`<p class="red-text">missing closed state</p>`, registry];
+
+            try {
+                const render = await new Promise(resolve => mermaid.render(
+                    'project_workflow_preview_svg',
+                    `graph TD\n${registry.transitions.map(([start_status, end_status]) => {
+                        const start_status_text = registry.status[start_status];
+                        const end_status_text = registry.status[end_status];
+                        return `${start_status}${start_status_text ? `[${start_status_text}]` : ''} --> ${end_status}${end_status_text ? `[${end_status_text}]` : ''}`
+                    }).join('\n')}`,
+                    resolve,
+                ));
+                project_workflow.setCustomValidity('');
+                return [project_workflow_preview.innerHTML = render, registry];
+            }
+            catch (e) {
+                if (e.str) {
+                    return [project_workflow_preview.innerHTML = htmlTmpl`<p class="text-red">${e.str}</p>`, registry];
+                }
+                else {
+                    throw e;
+                }
+            }
+        }
+
+        // update project
+
+        // form onsubmit
+        form.onsubmit = async e => {
+            e.preventDefault();
+
+            create_date.value = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            creator_id.value = its.user_id;
+
+            const body = await fetch(form.action, {
+                method: form.dataset.method,
+                body: new URLSearchParams({
+                    project_id: project_id.value,
+                    project_name: project_name.value,
+                    project_description: project_description.value,
+                    create_date: create_date.value,
+                    creator_id: creator_id.value,
+                }),
+                headers: headersDefault,
+            }).catch(() => ({}));
+
+            if (body.ok === false) {
+                const text = await body.text();
+                try {
+                    return M.toast({ html: JSON.parse(text).message });
+                }
+                catch {
+                    return M.toast({ html: text || body.statusText });
+                }
+            }
+            else if (body.ok === undefined) {
+                return M.toast({ html: 'Network Error' });
+            }
+
+            const json = await body.json();
+            project_id.value = json.id;
+
+            const [, registry] = await project_workflow.oninput();
+            await Promise.all(Object.entries(registry.status).map(async ([status, status_name]) => {
+                const json = await (await fetch('/status/createStatus', {
+                    method: 'post',
+                    body: new URLSearchParams({
+                        project_id: project_id.value,
+                        status_name: status_name,
+                    }),
+                    headers: headersDefault,
+                })).json();
+                if (['open', 'closed'].includes(status)) {
+                    await (await fetch(urlTmpl`/status/addSpecialStatus/${json.id}/${project_id.value}/${status.toUpperCase()}`, {
+                        method: 'post',
+                        headers: headersDefault,
+                    }));
+                }
+            }));
+
+            M.toast({ html: 'Success. Going to dashboard...' });
+            await sleep(2000);
+            location.assign(urlTmpl`./dashboard.html?project_id=${project_id}`);
+        }
     </script>
 </body>
 

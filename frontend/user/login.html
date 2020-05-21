@@ -25,11 +25,11 @@
     </nav>
 
     <div class="section">
-        <form method="POST" class="container" action="/api">
+        <form method="post" class="container" action="/login">
             <div class="row input-field">
                 <i class="material-icons prefix">account_box</i>
                 <input id="user_account" type="text" class="validate" required>
-                <label for="user_account">Username / Email</label>
+                <label for="user_account">Username <span style="display: none;">/ Email</span></label>
             </div>
             <div class="row input-field">
                 <i class="material-icons prefix">vpn_key</i>
@@ -37,7 +37,7 @@
                 <label for="user_password">Password</label>
             </div>
             <div class="row input-field center">
-                <button class="btn waves-effect waves-light" type="submit" name="action">Login
+                <button class="btn waves-effect waves-light" type="submit">Login
                     <i class="material-icons right">send</i>
                 </button>
             </div>
@@ -45,7 +45,40 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../util.js"></script>
     <script>
+        const form = document.getElementsByTagName('form')[0];
+        user_account.name = 'user_name';
+        user_password.name = 'user_password';
+
+        form.onsubmit = async e => {
+            e.preventDefault();
+
+            const body = await fetch(form.action, {
+                method: 'POST',
+                body: new URLSearchParams(new FormData(form)),
+                headers: { 'x-requested-with': 'fetch' },
+            }).catch(() => ({}));
+
+            if (body.ok === false) {
+                const text = await body.text();
+                try {
+                    return M.toast({ html: JSON.parse(text).message });
+                }
+                catch {
+                    return M.toast({ html: text || body.statusText });
+                }
+            }
+            else if (body.ok === undefined) {
+                return M.toast({ html: 'Network Error' });
+            }
+
+            const { user_name, user_id } = await body.json();
+            sessionStorage.its = JSON.stringify({ user_name, user_id });
+            M.toast({ html: 'Success. Going to explorer...' });
+            await sleep(2000);
+            location.assign('./explorer.html');
+        }
     </script>
 </body>
 

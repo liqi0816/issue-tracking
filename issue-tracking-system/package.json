@@ -2,7 +2,7 @@
   "name": "issue-tracking-system",
   "version": "1.0.0",
   "description": "Project",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,5 +18,8 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "http-proxy-middleware": "^1.0.4"
   }
 }
