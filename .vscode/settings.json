@@ -1,0 +1,13 @@
+{
+    "sqltools.connections": [
+        {
+            "database": "issue_tracking",
+            "dialect": "MySQL",
+            "name": "local",
+            "password": "test1234",
+            "port": 3306,
+            "server": "localhost",
+            "username": "root"
+        }
+    ]
+}
