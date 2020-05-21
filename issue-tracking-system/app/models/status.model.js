@@ -35,7 +35,7 @@ Status.addSpecialStatus = (statusId, projectId,statusType , result) => {
 
 
 Status.findStatusById = (statusId, result) => {
-  sql.query(`SELECT * FROM status WHERE status_id = ${statusId}`, (err, res) => {
+    sql.query("SELECT * FROM status WHERE cast(status_id as char) = ?",[statusId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -53,7 +53,7 @@ Status.findStatusById = (statusId, result) => {
 };
 
 Status.findSpecialStatusById = (statusId, result) => {
-  sql.query(`SELECT * FROM special_status WHERE status_id = ${statusId}`, (err, res) => {
+  sql.query("SELECT * FROM special_status WHERE cast(status_id as char) = ?",[statusId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -72,7 +72,7 @@ Status.findSpecialStatusById = (statusId, result) => {
 };
 
 Status.findStatusByProjectId = (projectId, result) => {
-  sql.query(`SELECT * FROM status WHERE project_id = ${projectId}`, (err, res) => {
+  sql.query("SELECT * FROM status WHERE cast(project_id as char) = ?",[projectId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -85,7 +85,7 @@ Status.findStatusByProjectId = (projectId, result) => {
 };
 
 Status.findSpecialStatusByProjectId = (projectId, result) => {
-  sql.query(`SELECT * FROM special_status WHERE project_id = ${projectId}`, (err, res) => {
+  sql.query("SELECT * FROM special_status WHERE cast(project_id as char) = ?",[projectId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -100,7 +100,7 @@ Status.findSpecialStatusByProjectId = (projectId, result) => {
 
 Status.updateStatusById = (id, status, result) => {
   sql.query(
-    "UPDATE status SET status_name = ? WHERE status_id = ?",
+    "UPDATE status SET status_name = ? WHERE cast(status_id as char) = ?",
     [status.status_name, id],
     (err, res) => {
       if (err) {
@@ -136,7 +136,7 @@ Status.addTransition = (projectId,startStatusId,endStatusId , result) => {
 };
 
 Status.findTransitionById = (transitionId, result) => {
-  sql.query(`SELECT * FROM transition WHERE transition_id = ${transitionId}`, (err, res) => {
+  sql.query("SELECT * FROM transition WHERE cast(transition_id as char) = ?",[transitionId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -155,7 +155,7 @@ Status.findTransitionById = (transitionId, result) => {
 
 
 Status.findTransitionByProjectId = (projectId, result) => {
-  sql.query(`SELECT * FROM transition WHERE project_id = ${projectId}`, (err, res) => {
+    sql.query("SELECT * FROM transition WHERE cast(project_id as char) = ?",[projectId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -168,7 +168,7 @@ Status.findTransitionByProjectId = (projectId, result) => {
 };
 
 Status.findTransitionByStartStatusId = (startStatusId, result) => {
-  sql.query(`SELECT * FROM transition WHERE start_status_id = ${startStatusId}`, (err, res) => {
+  sql.query("SELECT * FROM transition WHERE cast(start_status_id as char) = ?",[startStatusId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -181,8 +181,8 @@ Status.findTransitionByStartStatusId = (startStatusId, result) => {
 };
 
 Status.findNextStatusOfIssue = (issueId, result) => {
-  sql.query(`select * from issue a join transition b on a.project_id = b.project_id and a.current_status_id = b.start_status_id where issue_id = ${issueId}`,
-   (err, res) => {
+  sql.query("select * from issue a join transition b on a.project_id = b.project_id and a.current_status_id = b.start_status_id where cast(issue_id as char) = ?",
+   [issueId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);

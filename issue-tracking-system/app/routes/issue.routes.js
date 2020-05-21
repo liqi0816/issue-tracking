@@ -11,7 +11,9 @@ module.exports = app => {
 
   app.get("/issue/SearchIssueTitle/:projectId/:keyword", issue.SearchIssueTitle);
 
-  app.get("/issue/SearchIssueDescription/:projectId/:keyword", issue.SearchIssueDescription);  
+  app.get("/issue/SearchIssueDescription/:projectId?/:keyword?", issue.SearchIssueDescription);  
+
+  app.get("/issue/Search/:projectId/:projectTitle?/:ProjectDescription?/:issueTitle?/:issueDescription?/:status?/:asignee?/:reporter?", issue.Search);  
 
   // Update a Issue with issueId
   app.put("/issue/updateIssueById/:issueId", issue.updateIssueById);

@@ -34,6 +34,7 @@ exports.createIssue = (req, res) => {
 exports.findIssueById = (req, res) => {
   Issue.findIssueById(req.params.issueId, (err, data) => {
     if (err) {
+
       if (err.kind === "not_found") {
         res.status(404).send({
           message: `Not found Issue with id ${req.params.issueId}.`
@@ -43,7 +44,9 @@ exports.findIssueById = (req, res) => {
           message: "Error retrieving Issue with id " + req.params.issueId
         });
       }
-    } else res.send(data);
+    } else{
+      res.send(data);
+    }
   });
 };
 
@@ -75,7 +78,9 @@ exports.SearchIssueTitle = (req, res) => {
           message: "Error retrieving Issue with project id " + req.params.projectId
         });
       }
-    } else res.send(data);
+    } else {
+      res.send(data);
+    }
   });
 };
 
@@ -91,9 +96,37 @@ exports.SearchIssueDescription = (req, res) => {
           message: "Error retrieving Issue with project id " + req.params.projectId
         });
       }
-    } else res.send(data);
+    } else {
+
+      if (req.params.projectId || req.params.keyword){
+        console.log('b');  
+      }      
+      res.send(data)
+    };
   });
 };
+
+exports.Search = (req, res) => {
+  Issue.Search(req.params.projectId,req.params.projectTitle,req.params.ProjectDescription,req.params.issueTitle,
+    req.params.issueDescription,req.params.status,req.params.asignee,req.params.reporter,
+   (err, data) => {
+    if (err) {
+      if (err.kind === "not_found") {
+        res.status(404).send({
+          message: `Not found Issue with project id ${req.params.projectId}.`
+        });
+      } else {
+        res.status(500).send({
+          message: "Error retrieving Issue with project id " + req.params.projectId
+        });
+      }
+    } else {
+      console.log(req.params);
+      res.send(data)
+    };
+  });
+};
+
 
 // Update a Issue identified by the issueId in the request
 exports.updateIssueById = (req, res) => {

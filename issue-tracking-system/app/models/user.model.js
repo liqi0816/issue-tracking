@@ -9,7 +9,8 @@ const User = function(user) {
 };
 
 User.createUser = (newUser, result) => {
-  sql.query("INSERT INTO user SET ?", newUser, (err, res) => {
+  sql.query("INSERT INTO user SET user_email = ?, user_name = ?, user_alias = ?, user_password = AES_ENCRYPT(?, 'project'), create_date = ?", 
+    [newUser.user_email,newUser.user_name,newUser.user_alias,newUser.user_password,newUser.create_date], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -22,7 +23,7 @@ User.createUser = (newUser, result) => {
 };
 
 User.findUserById = (UserId, result) => {
-  sql.query(`SELECT * FROM user WHERE user_id = ${UserId}`, (err, res) => {
+  sql.query("SELECT * FROM user WHERE cast(user_id as char) = ?",[UserId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -42,7 +43,7 @@ User.findUserById = (UserId, result) => {
 
 User.updateUserById = (id, user, result) => {
   sql.query(
-    "UPDATE user SET user_email = ?, user_alias = ?, user_password = ?  WHERE user_id = ?",
+    "UPDATE user SET user_email = ?, user_alias = ?, user_password = ?  WHERE cast(user_id as char) = ?",
     [user.user_email, user.user_alias, user.user_password, id],
     (err, res) => {
       if (err) {
@@ -64,7 +65,7 @@ User.updateUserById = (id, user, result) => {
 };
 
 User.remove = (id, result) => {
-  sql.query("DELETE FROM user WHERE user_id = ?", id, (err, res) => {
+  sql.query("DELETE FROM user WHERE cast(user_id as char) = ?", [id], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(null, err);
@@ -116,7 +117,7 @@ User.assignIssue = (assignorId, assigneeId, issueId, result) => {
 }
 
 User.checkIfGrantee = (granteeId, projectId, result) => {
-  sql.query("SELECT * FROM grant_lead WHERE grantee_id = ? and project_id = ?",
+  sql.query("SELECT * FROM grant_lead WHERE cast(grantee_id as char) = ? and cast(project_id as char) = ?",
     [granteeId, projectId], (err, res) => {
     if (err) {
       console.log("error: ", err);
@@ -136,7 +137,7 @@ User.checkIfGrantee = (granteeId, projectId, result) => {
 };
 
 User.checkIfAssignee = (assigneeId, issueId, result) => {
-  sql.query("SELECT * FROM assign_issue WHERE assignee_id = ? and issue_id = ?",
+  sql.query("SELECT * FROM assign_issue WHERE cast(assignee_id as char) = ? and cast(issue_id as char) = ?",
     [assigneeId, issueId], (err, res) => {
     if (err) {
       console.log("error: ", err);

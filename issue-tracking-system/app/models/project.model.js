@@ -21,7 +21,7 @@ Project.createProject = (newProject, result) => {
 };
 
 Project.findProjectById = (projectId, result) => {
-  sql.query(`SELECT * FROM project WHERE project_id = ${projectId}`, (err, res) => {
+  sql.query("SELECT * FROM project WHERE cast(project_id as char) = ?",[projectId], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -41,7 +41,7 @@ Project.findProjectById = (projectId, result) => {
 
 Project.updateProjectById = (id, project, result) => {
   sql.query(
-    "UPDATE project SET project_name = ?, project_description = ?  WHERE project_id = ?",
+    "UPDATE project SET project_name = ?, project_description = ?  WHERE cast(project_id as char) = ?",
     [project.project_name, project.project_description, id],
     (err, res) => {
       if (err) {
@@ -63,7 +63,7 @@ Project.updateProjectById = (id, project, result) => {
 };
 
 Project.remove = (id, result) => {
-  sql.query("DELETE FROM project WHERE project_id = ?", id, (err, res) => {
+  sql.query("DELETE FROM project WHERE cast(project_id as char) = ?", id, (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(null, err);
@@ -82,7 +82,7 @@ Project.remove = (id, result) => {
 };
 
 Project.getUserProjects = (userId , result) => {
-  sql.query("select project_id from project where creator_id = ? union select project_id from grant_lead where grantee_id = ?;",
+  sql.query("select project_id from project where cast(creator_id as char) = ? union select project_id from grant_lead where cast(grantee_id as char) = ?;",
     [userId, userId], (err, res) => {
     if (err) {
       console.log("error: ", err);

@@ -7,20 +7,21 @@ module.exports = app => {
     var user_name = req.body.user_name;
     var user_password = req.body.user_password;
     if  (user_name && user_password){
-      sql.query('SELECT * FROM USER WHERE user_name = ? AND user_password = ?',
-        [user_name,user_password],(err,result,field) => {
+      sql.query('SELECT * FROM USER WHERE user_name = ? AND cast(AES_DECRYPT(user_password,"project") as char) = ?',
+        [user_name,user_password],function(err,result,field){
           if (result.length > 0) {
-            request.session.loggedin = true;
-            request.session.username = user_name;          
+            req.session.loggedin = true;
+            req.session.username = user_name; 
+            console.log(result)         
           } else {
-            response.send('Invalid combination.');
+            res.send('Invalid combination.');
           }
-          response.end();
+          res.end();
 
         });
     }else{
-      response.send('Please enter Username and Password!');
-      response.end();      
+      res.send('Please enter Username and Password!');
+      res.end();      
     } 
   });
 
