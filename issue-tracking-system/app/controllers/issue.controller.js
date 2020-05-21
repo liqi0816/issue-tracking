@@ -107,8 +107,8 @@ exports.SearchIssueDescription = (req, res) => {
 };
 
 exports.Search = (req, res) => {
-  Issue.Search(req.params.projectId,req.params.projectTitle,req.params.ProjectDescription,req.params.issueTitle,
-    req.params.issueDescription,req.params.status,req.params.asignee,req.params.reporter,
+  Issue.Search(req.params.projectId,req.query.projectTitle,req.query.ProjectDescription,req.query.issueTitle,
+    req.query.issueDescription,req.query.status,req.query.asignee,req.query.reporter,
    (err, data) => {
     if (err) {
       if (err.kind === "not_found") {
@@ -121,7 +121,7 @@ exports.Search = (req, res) => {
         });
       }
     } else {
-      console.log(req.params);
+      console.log(req.query);
       res.send(data)
     };
   });

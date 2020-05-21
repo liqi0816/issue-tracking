@@ -11,6 +11,7 @@ const Issue = function(issue) {
 };
 
 function buildSearchCondition( projectId, projectTitle, ProjectDescription, issueTitle, issueDescription, status, asignee, reporter) {
+
   var joins = []
   var on = []
   var where = []
@@ -19,7 +20,6 @@ function buildSearchCondition( projectId, projectTitle, ProjectDescription, issu
   var onValues = []
   var whereValues = []
 
-
   if (projectTitle || ProjectDescription){
     var project_sql = "join (select project_id from project where";
     if (projectTitle){
@@ -27,7 +27,7 @@ function buildSearchCondition( projectId, projectTitle, ProjectDescription, issu
       joinValues.push("%" + projectTitle + "%");
     }
     if (ProjectDescription){
-      project_sql += " project_description like ?";
+      project_sql += " AND project_description like ?";
       joinValues.push("%" + ProjectDescription + "%");
     }
 
@@ -55,22 +55,20 @@ function buildSearchCondition( projectId, projectTitle, ProjectDescription, issu
 
   if (issueTitle || issueDescription){
     if (issueTitle){
-      issue_sql += " a.issue_title like ?";
+      where.push("a.issue_title like ?");
       whereValues.push("%" + issueTitle + "%");
     }
     if (issueDescription){
-      issue_sql += " a.issue_description like ?";
+      where.push("a.issue_description like ?");
       whereValues.push("%" + issueDescription + "%");
     }
-
-    where.push(issue_sql);
   }
 
   where.push("cast(a.project_id as char) = ?");
   whereValues.push(projectId);
 
   var s = "select a.issue_id, a.project_id, a.reporter_id, a.current_status_id, a.issue_title, a.issue_description, a.create_date from issue a "+ 
-    joins.join("\r\n") + (joins.length ? " ON " : "") + (joins.length ? on.join(" AND ") : "") + (where.length ? " WHERE " : "") + where.join(" AND ");
+    joins.join(" ") + (joins.length ? " ON " : "") + (joins.length ? on.join(" AND ") : "") + (where.length ? " WHERE " : "") + where.join(" AND ");
   var v = joinValues.concat(onValues, whereValues);
 
   return [s,v];
@@ -125,8 +123,8 @@ Issue.findIssueByProjectId = (projectId, result) => {
 };
 
 Issue.SearchIssueTitle = (projectId, keyword, result) => {
-  sql.query(`SELECT * FROM issue WHERE cast(project_id as char) = ? and issue_title like '%${keyword}%'`,
-  [projectId], (err, res) => {
+  sql.query("SELECT * FROM issue WHERE cast(project_id as char) = ? and issue_title like ?",
+  [projectId, "%" + keyword + "%"], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -141,8 +139,8 @@ Issue.SearchIssueTitle = (projectId, keyword, result) => {
 };
 
 Issue.SearchIssueDescription = (projectId, keyword, result) => {
-  sql.query(`SELECT * FROM issue WHERE cast(project_id as char) = ? and issue_description like '%${keyword}%'`,
-  [projectId], (err, res) => {
+  sql.query("SELECT * FROM issue WHERE cast(project_id as char) = ? and issue_description like ?",
+  [projectId, "%" + keyword + "%"], (err, res) => {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -156,7 +154,7 @@ Issue.SearchIssueDescription = (projectId, keyword, result) => {
 
 Issue.Search = (projectId, projectTitle, ProjectDescription, issueTitle, issueDescription, status, asignee, reporter, result) => {
   sql.query(...buildSearchCondition(projectId, projectTitle, ProjectDescription, issueTitle, issueDescription, status, asignee, reporter, result), function(err, res){
-    if (err) { 
+    if (err) {
       console.log("error: ", err);
       result(err, null);
       return;
