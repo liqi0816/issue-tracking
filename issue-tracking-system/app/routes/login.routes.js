@@ -7,7 +7,7 @@ module.exports = app => {
     var user_name = req.body.user_name;
     var user_password = req.body.user_password;
     if (user_name && user_password) {
-      sql.query('SELECT * FROM USER WHERE user_name = ? AND user_password =  CAST(? AS BINARY(60))',
+      sql.query('SELECT * FROM USER WHERE user_name = ? AND cast(AES_DECRYPT(user_password,"project") as char) = ?',
         [user_name, user_password], (err, result, field) => {
           if (result.length === 1) {
             req.session.loggedin = true;
