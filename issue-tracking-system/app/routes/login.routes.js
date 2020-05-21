@@ -11,8 +11,8 @@ module.exports = app => {
         [user_name, user_password], (err, result, field) => {
           if (result.length === 1) {
             req.session.loggedin = true;
-            req.session.user_name = user_name;
-            req.session.user_id = user_id;
+            req.session.user_name = result[0].user_name;
+            req.session.user_id = result[0].user_id;
             res.send(JSON.stringify(result[0]));
           }
           else if (result.length > 1) {
