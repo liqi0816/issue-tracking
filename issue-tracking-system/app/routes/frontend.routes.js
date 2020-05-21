@@ -6,4 +6,9 @@ module.exports = app => {
         ws: true,
         logLevel: 'warn'
     }));
+
+    app.use(createProxyMiddleware('/favicon.ico', {
+        target: 'http://localhost:5500',
+        logLevel: 'warn'
+    }));
 };

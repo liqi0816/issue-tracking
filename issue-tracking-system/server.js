@@ -15,9 +15,12 @@ app.use(bodyParser.json());
 // parse requests of content-type: application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// frontend static
+require("./app/routes/frontend.routes.js")(app);
+
 // CSRF: check 'x-requested-with'
 app.use((req, res, next) => {
-    if (!req.path.startsWith('/frontend') && req.headers['x-requested-with'] === undefined) {
+    if (req.headers['x-requested-with'] === undefined) {
         return res.status(401).send();
     }
     return next();
@@ -29,7 +32,6 @@ require("./app/routes/login.routes.js")(app);
 require("./app/routes/project.routes.js")(app);
 require("./app/routes/status.routes.js")(app);
 require("./app/routes/issue.routes.js")(app);
-require("./app/routes/frontend.routes.js")(app);
 
 // set port, listen for requests
 app.listen(3000, () => {

@@ -2,9 +2,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "chrome",
+            "request": "launch",
+            "name": "chrome",
+            "url": "http://localhost:3000/frontend",
+            "webRoot": "${workspaceFolder}/frontend"
+        },
+        {
             "type": "node",
             "request": "launch",
-            "name": "launch",
+            "name": "server",
             "skipFiles": [
                 "<node_internals>/**"
             ],
