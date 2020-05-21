@@ -25,9 +25,9 @@
         </div>
         <div class="grey lighten-4 black-text">
             <div class="nav-content container section">
-                <p class="nav-title">user_alias (user_name)</p>
-                <p>@user_id</p>
-                <p>member since create_date</p>
+                <p class="nav-title">${user_alias} (@${user_name})</p>
+                <p>user#${user_id}</p>
+                <p>member since ${new Date(create_date).toDateString()}</p>
                 <a class="btn-floating btn-large halfway-fab waves-effect waves-light teal" href="./register.html">
                     <i class="material-icons">mode_edit</i>
                 </a>
@@ -52,7 +52,6 @@
         <ul class="pagination container">
             <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
             <li class="active blue"><a href="#!">1</a></li>
-            <!-- waves-effect -->
             <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
         </ul>
     </div>
@@ -83,7 +82,7 @@
                     </a>
                     <p>project#${project_id} (${creator_id === its.user_id ? 'creator' : 'contributor'})</p>
                     <p>${project_description}</p>
-                    <a class="secondary-content"><i class="material-icons">star_outline</i></a>
+                    <a class="secondary-content" onclick="M.toast({ html: 'Not implemented' });"><i class="material-icons">star_outline</i></a>
                 </li>`;
             }))).join('');
         })();

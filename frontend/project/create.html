@@ -215,7 +215,7 @@
 
             M.toast({ html: 'Success. Going to dashboard...' });
             await sleep(2000);
-            location.assign(urlTmpl`./dashboard.html?project_id=${project_id}`);
+            location.assign(urlTmpl`./dashboard.html?project_id=${project_id.value}`);
         }
     </script>
 </body>

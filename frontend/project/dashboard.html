@@ -19,8 +19,8 @@
         <div class="nav-wrapper container">
             <a href="" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
-                <li><a href="./register.html">Explorer</a></li>
-                <li><a href="./register.html">Profile</a></li>
+                <li><a href="/frontend/user/explorer.html">Explorer</a></li>
+                <li><a href="/frontend/user/register.html">Profile</a></li>
             </ul>
         </div>
         <div class="nav-content container section">
@@ -29,8 +29,9 @@
         </div>
         <div class="grey lighten-4 black-text">
             <div class="nav-content container section">
-                <p class="nav-title">Project 1</p>
-                <p>Project 1 Descrpiton</p>
+                <p class="nav-title">project_name</p>
+                <p>project_description</p>
+                <p>project#${project_id} created by user#${creator_id} on ${new Date(create_date).toDateString()}</p>
                 <a class="btn-floating btn-large halfway-fab waves-effect waves-light teal">
                     <i class="material-icons">mode_edit</i>
                 </a>
@@ -40,9 +41,9 @@
 
     <div class="section">
         <form method="GET" class="container" action="/api">
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; flex-wrap: wrap">
                 <i class="material-icons prefix">filter_list</i>
-                <div class="input-field" style="flex-grow: 100;">
+                <div class="input-field" style="flex-grow: 100; margin-right: 1rem;">
                     <input id="filterInput" type="text" class="autocomplete" autocomplete="off">
                 </div>
                 <div>
@@ -56,30 +57,6 @@
 
     <div class="section">
         <ul class="collection container">
-            <li class="collection-item avatar">
-                <i class="material-icons circle green">error_outline</i>
-                <span class="title">Issue #1</span>
-                <p>#1</p>
-                <a class="secondary-content"><i class="material-icons">add_alert</i></a>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle green">error_outline</i>
-                <span class="title">Issue #2</span>
-                <p>#2</p>
-                <a class="secondary-content"><i class="material-icons">add_alert</i></a>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle blue">schedule</i>
-                <span class="title">Issue #3</span>
-                <p>#3</p>
-                <a class="secondary-content"><i class="material-icons">add_alert</i></a>
-            </li>
-            <li class="collection-item avatar">
-                <i class="material-icons circle">done</i>
-                <span class="title">Issue #4</span>
-                <p>#4</p>
-                <a class="secondary-content"><i class="material-icons">add_alert</i></a>
-            </li>
         </ul>
     </div>
 
@@ -93,17 +70,29 @@
         <ul class="pagination container">
             <li class="disabled"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
             <li class="active blue"><a href="#!">1</a></li>
-            <li class="waves-effect"><a href="#!">2</a></li>
-            <li class="waves-effect"><a href="#!">3</a></li>
-            <li class="waves-effect"><a href="#!">4</a></li>
-            <li class="waves-effect"><a href="#!">5</a></li>
-            <li class="waves-effect"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+            <li class="disabled"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
         </ul>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../util.js"></script>
     <script>
         M.AutoInit();
+        
+        const project_id = new URLSearchParams(location.search).get('project_id') | 0;
+        if (!project_id) throw new TypeError('project_id unknown');
+
+        (async () => {
+            const json = await (await fetch(urlTmpl`/project/findProjectById/${project_id}`, { headers: headersDefault })).json();
+            const { project_name, creator_id, project_description, create_date } = json;
+            document.getElementsByClassName('breadcrumb')[0].textContent = its.user_name;
+            document.getElementsByClassName('breadcrumb')[1].textContent = project_name;
+            document.getElementsByClassName('nav-content')[1].children[0].textContent = project_name;
+            document.getElementsByClassName('nav-content')[1].children[1].textContent = project_description;
+            document.getElementsByClassName('nav-content')[1].children[2].textContent = `project#${project_id} created by user#${creator_id} on ${new Date(create_date).toDateString()}`;
+        })();
+
+
         M.Autocomplete.getInstance(filterInput).updateData({
             'status:"Status 1"': null,
             'status:"Status 2"': null,
