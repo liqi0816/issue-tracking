@@ -20,15 +20,15 @@ INSERT INTO user(user_email, user_name, user_alias, user_password, create_date) 
 ('user3@email.com','test_user_3','user3', AES_ENCRYPT('user_password3',"project"),'2020-01-03 10:10:10'),
 ('user4@email.com','test_user_4','user4', AES_ENCRYPT('user_password4',"project"),'2020-01-04 10:10:10'),
 
-('boss@amazon.com','test_user_5','Jeff Bezos', 'amazon_boss_password','2020-01-05 10:10:10'),
-('boss@apple.com','test_user_6','Steve Jobs', 'apple_boss_password','2020-01-06 10:10:10'),
-('boss@facebook.com','test_user_7','Mark Zuckerberg', 'facebook_boss_password','2020-01-07 10:10:10'),
-('boss@microsoft.com','test_user_8','Bill Gates', 'microsoft_boss_password','2020-01-08 10:10:10'),
+('boss@amazon.com','test_user_5','Jeff Bezos', AES_ENCRYPT('amazon_boss_password',"project"),'2020-01-05 10:10:10'),
+('boss@apple.com','test_user_6','Steve Jobs', AES_ENCRYPT('apple_boss_password',"project"),'2020-01-06 10:10:10'),
+('boss@facebook.com','test_user_7','Mark Zuckerberg', AES_ENCRYPT('facebook_boss_password',"project"),'2020-01-07 10:10:10'),
+('boss@microsoft.com','test_user_8','Bill Gates', AES_ENCRYPT('microsoft_boss_password',"project"),'2020-01-08 10:10:10'),
 
-('staff1@amazon.com','test_user_9','amazon_staff1', 'amazon_staff1_password','2020-01-09 10:10:10'),
-('staff1@apple.com','test_user_10','apple_staff1', 'apple_staff1_password','2020-01-10 10:10:10'),
-('staff1@facebook.com','test_user_11','facebook_staff1', 'facebook_staff1_password','2020-01-11 10:10:10'),
-('staff1@microsoft.com','test_user_12','microsoft_staff1', 'microsoft_staff1_password','2020-01-12 10:10:10');
+('staff1@amazon.com','test_user_9','amazon_staff1', AES_ENCRYPT('amazon_staff1_password',"project"),'2020-01-09 10:10:10'),
+('staff1@apple.com','test_user_10','apple_staff1', AES_ENCRYPT('apple_staff1_password',"project"),'2020-01-10 10:10:10'),
+('staff1@facebook.com','test_user_11','facebook_staff1', AES_ENCRYPT('facebook_staff1_password',"project"),'2020-01-11 10:10:10'),
+('staff1@microsoft.com','test_user_12','microsoft_staff1', AES_ENCRYPT('microsoft_staff1_password',"project"),'2020-01-12 10:10:10');
 
 CREATE TABLE project (
   project_id int AUTO_INCREMENT NOT NULL,
