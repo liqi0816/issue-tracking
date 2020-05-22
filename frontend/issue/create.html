@@ -69,7 +69,7 @@
         (async () => {
             issue_id.value = new URLSearchParams(location.search).get('issue_id');
             if (issue_id.value) {
-                const json = (await (await fetch(urlTmpl`/issue/findIssueById/${issue_id}`, { headers: headersDefault })).json())[0];
+                const json = (await (await fetch(urlTmpl`/issue/findIssueById/${issue_id.value}`, { headers: headersDefault })).json())[0];
                 project_id.value = json.project_id;
                 reporter_id.value = json.reporter_id;
                 current_status_id.value = json.current_status_id;
