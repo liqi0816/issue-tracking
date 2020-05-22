@@ -121,8 +121,9 @@
             project_workflow.setCustomValidity('invalid workflow description');
             const store = { transition: [], status: {} };
             project_workflow_hightlighter.innerHTML = project_workflow.value.split(/\r?\n/).map(e => {
-                const groups = /(?<start_status>[\w\d]+)(?:\[(?<start_status_text>[\w\d ]+)\])? --> (?<end_status>[\w\d]+)(?:\[(?<end_status_text>[\w\d ]+)\])?/.exec(e)?.groups;
-                if (!groups) return htmlTmpl`<span class="error">${e}</span>`;
+                const exec = /(?<start_status>[\w\d]+)(?:\[(?<start_status_text>[\w\d ]+)\])? --> (?<end_status>[\w\d]+)(?:\[(?<end_status_text>[\w\d ]+)\])?/.exec(e);
+                if (!exec) return htmlTmpl`<span class="error">${e}</span>`;
+                const groups = exec.groups;
 
                 const { start_status, start_status_text, end_status, end_status_text } = groups;
                 store.status[start_status] = start_status_text ?? start_status;
@@ -130,10 +131,12 @@
                 store.transition.push([start_status, end_status]);
 
                 return [
+                    htmlTmpl`<span class="error">${e.slice(0, e.indexOf(exec[0]))}</span>`,
                     htmlTmpl`<span class="start_status">${start_status}</span>`,
                     start_status_text ? htmlTmpl`<span class="start_status_text">[${start_status_text}]</span>` : '',
                     htmlTmpl` --> <span class="end_status">${end_status}</span>`,
                     end_status_text ? htmlTmpl`<span class="end_status_text">[${end_status_text}]</span>` : '',
+                    htmlTmpl`<span class="error">${e.slice(e.indexOf(exec[0]) + exec[0].length)}</span>`,
                 ].join('');
             }).join('\n');
 

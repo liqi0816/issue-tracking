@@ -108,7 +108,7 @@ exports.SearchIssueDescription = (req, res) => {
 
 exports.Search = (req, res) => {
   Issue.Search(req.params.projectId,req.query.projectTitle,req.query.ProjectDescription,req.query.issueTitle,
-    req.query.issueDescription,req.query.status,req.query.asignee,req.query.reporter,
+    req.query.issueDescription,req.query.status,req.query.assignee,req.query.reporter,
    (err, data) => {
     if (err) {
       if (err.kind === "not_found") {

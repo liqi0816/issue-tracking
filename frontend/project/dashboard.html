@@ -162,7 +162,7 @@
                 }
             }
 
-            const json = await (await fetch(urlTmpl`/issue/Search/${project_id}?issueTitle=${search['issueTitle'] ?? ''}&issueDescription=${search['issueDescription'] ?? ''}&status=${search['status'] ?? ''}&asignee=${store.reporter_id[search['asignee']] ?? search['asignee'] ?? ''}&reporter=${store.reporter_id[search['reporter']] ?? search['reporter'] ?? ''}`, { headers: headersDefault })).json();
+            const json = await (await fetch(urlTmpl`/issue/Search/${project_id}?issueTitle=${search['issueTitle'] ?? ''}&issueDescription=${search['issueDescription'] ?? ''}&status=${search['status'] ?? ''}&assignee=${store.reporter_id[search['assignee']] ?? search['assignee'] ?? ''}&reporter=${store.reporter_id[search['reporter']] ?? search['reporter'] ?? ''}`, { headers: headersDefault })).json();
             document.getElementsByClassName('collection')[0].innerHTML = (await Promise.all(json.map(async e => {
                 const { issue_id, issue_title, issue_description, create_date, current_status_id, reporter_id } = e;
                 const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${reporter_id}`, { headers: headersDefault })).json();

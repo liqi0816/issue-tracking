@@ -123,8 +123,8 @@
                 document.getElementsByClassName('nav-content')[1].children[0].textContent = issue_title;
                 document.getElementsByClassName('nav-content')[1].children[1].textContent = issue_description;
                 document.getElementsByClassName('nav-content')[1].children[2].textContent = `issue#${issue_id} created by user#${reporter_id} on ${new Date(create_date).toDateString()}`;
-                document.getElementsByClassName('btn-floating btn-large halfway-fab')[0].href = `./create.html?issue_id=${issue_id}`;
-                document.getElementsByClassName('fixed-action-btn')[0].children[0].href = `./create.html?issue_id=${issue_id}`;
+                document.getElementsByClassName('btn-floating btn-large halfway-fab')[0].href = `./create.html?issue_id=${issue_id}&project_id=${project_id}`;
+                document.getElementsByClassName('fixed-action-btn')[0].children[0].href = `./create.html?issue_id=${issue_id}&project_id=${project_id}`;
             }
 
             // history 
