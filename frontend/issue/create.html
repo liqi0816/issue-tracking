@@ -19,18 +19,20 @@
         <div class="nav-wrapper container">
             <a href="/frontend" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
-                <li><a href="./register.html">Explorer</a></li>
-                <li><a href="./register.html">Profile</a></li>
+                <li><a href="/frontend/user/explorer.html">Explorer</a></li>
+                <li><a href="/frontend/user/register.html">Profile</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="section">
-        <form method="post" class="container" action="/api">
+        <form method="post" class="container" action="/issue/createIssue" data-method="post">
+            <input id="project_id" type="hidden" required>
+            <input id="reporter_id" type="hidden" required>
             <input id="issue_id" type="hidden">
             <div class="row input-field">
                 <i class="material-icons prefix">folder</i>
-                <input id="project_name" type="text" class="valid" readonly value="Project 1">
+                <input id="project_name" type="text" class="valid" readonly value="project_name">
                 <label for="project_name">Project</label>
             </div>
             <div class="row input-field">
@@ -48,11 +50,88 @@
                     <i class="material-icons right">send</i>
                 </button>
             </div>
+            <input id="create_date" type="hidden">
+            <input id="current_status_id" type="hidden">
         </form>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../util.js"></script>
     <script>
+        project_id.value = new URLSearchParams(location.search).get('project_id') | 0;
+        reporter_id.value = its.user_id | 0;
+        if (project_id.value === '0') throw new TypeError('project_id unknown');
+        if (reporter_id.value === '0') throw new TypeError('reporter_id unknown');
+
+        const form = document.getElementsByTagName('form')[0];
+
+        // update
+        (async () => {
+            issue_id.value = new URLSearchParams(location.search).get('issue_id');
+            if (issue_id.value) {
+                const json = (await (await fetch(urlTmpl`/issue/findIssueById/${issue_id}`, { headers: headersDefault })).json())[0];
+                project_id.value = json.project_id;
+                reporter_id.value = json.reporter_id;
+                current_status_id.value = json.current_status_id;
+                issue_title.value = json.issue_title;
+                issue_description.value = json.issue_description;
+                create_date.value = json.create_date;
+                M.updateTextFields();
+                form.action = `/issue/updateIssueById/${issue_id.value}`;
+                form.dataset.method = 'put';
+                document.getElementsByTagName('button')[0].childNodes[0].nodeValue = 'Update';
+            }
+        })();
+
+        // header
+        (async () => {
+            project_name.value = (await (await fetch(urlTmpl`/project/findProjectById/${project_id.value}`, {
+                headers: headersDefault,
+            })).json()).project_name;
+            current_status_id.value = (await (await fetch(urlTmpl`/status/findSpecialStatusByProjectId/${project_id.value}`, {
+                headers: headersDefault,
+            })).json()).find(({ status_type }) => status_type === 'OPEN').status_id;
+        })();
+
+        // form onsubmit
+        form.onsubmit = async e => {
+            e.preventDefault();
+
+            create_date.value = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+            const body = await fetch(form.action, {
+                method: form.dataset.method,
+                body: new URLSearchParams({
+                    project_id: project_id.value,
+                    reporter_id: reporter_id.value,
+                    current_status_id: current_status_id.value,
+                    issue_title: issue_title.value,
+                    issue_description: issue_description.value,
+                    create_date: create_date.value,
+                }),
+                headers: headersDefault,
+            }).catch(() => ({}));
+
+            if (body.ok === false) {
+                const text = await body.text();
+                try {
+                    return M.toast({ html: htmlTmpl`${JSON.parse(text).message}` });
+                }
+                catch {
+                    return M.toast({ html: htmlTmpl`${text || body.statusText}` });
+                }
+            }
+            else if (body.ok === undefined) {
+                return M.toast({ html: 'Network Error' });
+            }
+
+            const json = await body.json();
+            issue_id.value = json.id;
+
+            M.toast({ html: 'Success. Going to detail...' });
+            await sleep(2000);
+            location.assign(urlTmpl`./detail.html?issue_id=${issue_id.value}`);
+        }
     </script>
 </body>
 

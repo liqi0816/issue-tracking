@@ -40,9 +40,9 @@
     </nav>
 
     <div class="section">
-        <form method="GET" class="container" action="/issue/Search">
+        <form method="get" class="container" action="/issue/Search">
             <div style="display: flex; align-items: center; flex-wrap: wrap">
-                <i class="material-icons prefix">filter_list</i>
+                <i class="material-icons">filter_list</i>
                 <div class="input-field" style="flex-grow: 100; margin-right: 1rem;">
                     <input id="filterInput" type="text" class="autocomplete validate" autocomplete="off">
                 </div>
@@ -75,7 +75,6 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
     <script src="../util.js"></script>
     <script>
         M.AutoInit();
@@ -91,9 +90,12 @@
             const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${creator_id}`, { headers: headersDefault })).json();
             document.getElementsByClassName('breadcrumb')[0].textContent = user_name;
             document.getElementsByClassName('breadcrumb')[1].textContent = project_name;
+            document.getElementsByClassName('breadcrumb')[1].href = `./dashboard.htm?project_id=${project_id}`;
             document.getElementsByClassName('nav-content')[1].children[0].textContent = project_name;
             document.getElementsByClassName('nav-content')[1].children[1].textContent = project_description;
             document.getElementsByClassName('nav-content')[1].children[2].textContent = `project#${project_id} created by user#${creator_id} on ${new Date(create_date).toDateString()}`;
+            document.getElementsByClassName('btn-floating btn-large halfway-fab')[0].href = `./create.html?project_id=${project_id}`;
+            document.getElementsByClassName('fixed-action-btn')[0].children[0].href = `../issue/create.html?project_id=${project_id}`;
         })();
 
         // store
@@ -102,11 +104,11 @@
                 const { status_id, status_name } = e;
                 store.status[status_id] = e;
                 store.autocomplete.push(`status:${status_name.includes(' ') ? `"${status_name}"` : status_name}`);
-            };
+            }
             for (const { status_id, status_type } of await (await fetch(urlTmpl`/status/findSpecialStatusByProjectId/${project_id}`, { headers: headersDefault })).json()) {
                 const e = store.status[status_id];
                 if (e) e.status_type = status_type;
-            };
+            }
 
             const json = await (await fetch(urlTmpl`/issue/findIssueByProjectId/${project_id}`, { headers: headersDefault })).json();
             await Promise.all(json.map(async e => {
@@ -160,7 +162,7 @@
                 }
             }
 
-            const json = await (await fetch(urlTmpl`/issue/Search/${project_id}?issueTitle=${search['issueTitle'] ?? ''}&issueDescription=${search['issueDescription'] ?? ''}&status=${search['status'] ?? ''}&asignee=${store.reporter_id[search['asignee']] ?? ''}&reporter=${store.reporter_id[search['reporter']] ?? ''}`, { headers: headersDefault })).json();
+            const json = await (await fetch(urlTmpl`/issue/Search/${project_id}?issueTitle=${search['issueTitle'] ?? ''}&issueDescription=${search['issueDescription'] ?? ''}&status=${search['status'] ?? ''}&asignee=${store.reporter_id[search['asignee']] ?? search['asignee'] ?? ''}&reporter=${store.reporter_id[search['reporter']] ?? search['reporter'] ?? ''}`, { headers: headersDefault })).json();
             document.getElementsByClassName('collection')[0].innerHTML = (await Promise.all(json.map(async e => {
                 const { issue_id, issue_title, issue_description, create_date, current_status_id, reporter_id } = e;
                 const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${reporter_id}`, { headers: headersDefault })).json();

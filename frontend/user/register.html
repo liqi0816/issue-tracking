@@ -66,7 +66,7 @@
     <script>
         const form = document.getElementsByTagName('form')[0];
 
-        // update profile
+        // update
         (async () => {
             user_id.value = its.user_id || new URLSearchParams(location.search).get('user_id');
             if (user_id.value) {
@@ -115,10 +115,10 @@
             if (body.ok === false) {
                 const text = await body.text();
                 try {
-                    return M.toast({ html: JSON.parse(text).message });
+                    return M.toast({ html: htmlTmpl`${JSON.parse(text).message}` });
                 }
                 catch {
-                    return M.toast({ html: text || body.statusText });
+                    return M.toast({ html: htmlTmpl`${text || body.statusText}` });
                 }
             }
             else if (body.ok === undefined) {

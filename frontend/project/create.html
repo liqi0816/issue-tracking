@@ -34,6 +34,11 @@
                 <label for="project_name">Name</label>
             </div>
             <div class="row input-field">
+                <i class="material-icons prefix">account_circle</i>
+                <textarea id="project_lead" class="validate materialize-textarea"></textarea>
+                <label for="project_lead">Project Leaders</label>
+            </div>
+            <div class="row input-field">
                 <i class="material-icons prefix">description</i>
                 <input id="project_description" type="text" class="validate" required>
                 <label for="project_description">Description</label>
@@ -82,7 +87,7 @@
                 <div class="autocomplete-content workflow-text" style="position: relative;">
                     <div id="project_workflow_hightlighter"></div>
                 </div>
-                <textarea id="project_workflow" class="validate materialize-textarea workflow-text" style="color: transparent; caret-color: black;"></textarea>
+                <textarea id="project_workflow" class="validate materialize-textarea workflow-text" style="color: transparent; caret-color: black;" required></textarea>
                 <label for="project_workflow">Workflow Description</label>
                 <ol class="workflow-description autocomplete-content">
                     <li>workflow syntax: <code>start_status[display_text(optional)] --> end_status[display_text(optional)]</code>;</li>
@@ -114,7 +119,7 @@
         mermaid.initialize({ securityLevel: 'loose' });
         project_workflow.oninput = async () => {
             project_workflow.setCustomValidity('invalid workflow description');
-            const store = { transitions: [], status: {} };
+            const store = { transition: [], status: {} };
             project_workflow_hightlighter.innerHTML = project_workflow.value.split(/\r?\n/).map(e => {
                 const groups = /(?<start_status>[\w\d]+)(?:\[(?<start_status_text>[\w\d ]+)\])? --> (?<end_status>[\w\d]+)(?:\[(?<end_status_text>[\w\d ]+)\])?/.exec(e)?.groups;
                 if (!groups) return htmlTmpl`<span class="error">${e}</span>`;
@@ -122,7 +127,7 @@
                 const { start_status, start_status_text, end_status, end_status_text } = groups;
                 store.status[start_status] = start_status_text ?? start_status;
                 store.status[end_status] = end_status_text ?? end_status;
-                store.transitions.push([start_status, end_status]);
+                store.transition.push([start_status, end_status]);
 
                 return [
                     htmlTmpl`<span class="start_status">${start_status}</span>`,
@@ -138,7 +143,7 @@
             try {
                 const render = await new Promise(resolve => mermaid.render(
                     'project_workflow_preview_svg',
-                    `graph TD\n${store.transitions.map(([start_status, end_status]) => {
+                    `graph TD\n${store.transition.map(([start_status, end_status]) => {
                         const start_status_text = store.status[start_status];
                         const end_status_text = store.status[end_status];
                         return `${start_status}${start_status_text ? `[${start_status_text}]` : ''} --> ${end_status}${end_status_text ? `[${end_status_text}]` : ''}`
@@ -159,6 +164,20 @@
         }
 
         // update project
+        (async () => {
+            project_id.value = new URLSearchParams(location.search).get('project_id');
+            if (project_id.value) {
+                const json = await (await fetch(urlTmpl`/project/findProjectById/${project_id.value}`, { headers: headersDefault })).json();
+                project_name.value = json.project_name;
+                project_description.value = json.project_description;
+                create_date.value = json.create_date;
+                creator_id.value = json.creator_id;
+                M.updateTextFields();
+                form.action = `/user/updateProjectById/${project_id.value}`;
+                form.dataset.method = 'put';
+                document.getElementsByTagName('button')[0].childNodes[0].nodeValue = 'Update';
+            }
+        })();
 
         // form onsubmit
         form.onsubmit = async e => {
@@ -182,10 +201,10 @@
             if (body.ok === false) {
                 const text = await body.text();
                 try {
-                    return M.toast({ html: JSON.parse(text).message });
+                    return M.toast({ html: htmlTmpl`${JSON.parse(text).message}` });
                 }
                 catch {
-                    return M.toast({ html: text || body.statusText });
+                    return M.toast({ html: htmlTmpl`${text || body.statusText}` });
                 }
             }
             else if (body.ok === undefined) {
@@ -195,6 +214,13 @@
             const json = await body.json();
             project_id.value = json.id;
 
+            project_lead.value += `\n${creator_id}`;
+            await Promise.all(project_lead.value.split('\n').map(e => e.trim()).filter(e => e).map(async e => {
+                return await (await fetch(urlTmpl`/user/grantLead/${its.user_id}/${e.trim()}/${project_id.value}`, {
+                    method: 'post',
+                    headers: headersDefault,
+                })).json();
+            }));
             const [, store] = await project_workflow.oninput();
             await Promise.all(Object.entries(store.status).map(async ([status, status_name]) => {
                 const json = await (await fetch('/status/createStatus', {
@@ -206,10 +232,10 @@
                     headers: headersDefault,
                 })).json();
                 if (['open', 'closed'].includes(status)) {
-                    await (await fetch(urlTmpl`/status/addSpecialStatus/${json.id}/${project_id.value}/${status.toUpperCase()}`, {
+                    await fetch(urlTmpl`/status/addSpecialStatus/${json.id}/${project_id.value}/${status.toUpperCase()}`, {
                         method: 'post',
                         headers: headersDefault,
-                    }));
+                    });
                 }
             }));
 

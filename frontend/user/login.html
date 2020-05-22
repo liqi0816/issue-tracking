@@ -55,7 +55,7 @@
             e.preventDefault();
 
             const body = await fetch(form.action, {
-                method: 'POST',
+                method: form.method,
                 body: new URLSearchParams(new FormData(form)),
                 headers: { 'x-requested-with': 'fetch' },
             }).catch(() => ({}));
@@ -63,10 +63,10 @@
             if (body.ok === false) {
                 const text = await body.text();
                 try {
-                    return M.toast({ html: JSON.parse(text).message });
+                    return M.toast({ html: htmlTmpl`${JSON.parse(text).message}` });
                 }
                 catch {
-                    return M.toast({ html: text || body.statusText });
+                    return M.toast({ html: htmlTmpl`${text || body.statusText}` });
                 }
             }
             else if (body.ok === undefined) {

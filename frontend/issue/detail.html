@@ -19,19 +19,20 @@
         <div class="nav-wrapper container">
             <a href="/frontend" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
-                <li><a href="./register.html">Explorer</a></li>
-                <li><a href="./register.html">Profile</a></li>
+                <li><a href="/frontend/user/explorer.html">Explorer</a></li>
+                <li><a href="/frontend/user/register.html">Profile</a></li>
             </ul>
         </div>
         <div class="nav-content container section">
             <a href="../user/explorer.html" class="breadcrumb">user_name</a>
             <a href="../project/dashboard.html" class="breadcrumb">project_name</a>
-            <a href="" class="breadcrumb">#1</a>
+            <a href="" class="breadcrumb">#${issue_id}</a>
         </div>
         <div class="grey lighten-4 black-text">
             <div class="nav-content container section">
                 <p class="nav-title">issue_title</p>
-                <p class="">issue_descrpiton</p>
+                <p>issue_descrpiton</p>
+                <p>issue#${issue_id} created by user#${reporter_id} on ${new Date(create_date).toDateString()}</p>
                 <a class="btn-floating btn-large halfway-fab waves-effect waves-light teal">
                     <i class="material-icons">mode_edit</i>
                 </a>
@@ -40,37 +41,28 @@
     </nav>
 
     <div class="section">
-        <form method="GET" class="container" action="/api">
-            <div style="display: flex; align-items: center;">
+        <form method="post" class="container" action="/user/assignIssue/:assignorId/:assigneeId/:issueId">
+            <div style="display: flex; align-items: center; flex-wrap: wrap">
                 <i class="material-icons">assignment</i>
-                <div style="flex-grow: 100;">
+                <div class="input-field" style="flex-grow: 100; margin-right: 1rem;">
                     <div id="assignChip" style="overflow: visible;" class="chips chips-autocomplete chips-placeholderv chips-initial"></div>
                 </div>
-                <button class="btn waves-effect waves-light" type="button">assign</button>
+                <button class="btn waves-effect waves-light" type="submit">assign</button>
             </div>
         </form>
     </div>
 
     <div class="section">
         <div class="container">
-            <div style="display: flex; flex-wrap: wrap;">
-                <div style="flex-grow: 100;">
+            <div class="row">
+                <div id="project_workflow_preview" class="center col s12 m7">
+                </div>
+                <div class="col s12 m5">
                     <ul class="collection">
-                        <li class="collection-item avatar">
-                            <i class="material-icons circle green">error_outline</i>
-                            <span class="title">Open</span>
-                            <p>at create_date</p>
-                        </li>
-                        <li class="collection-item avatar">
-                            <i class="material-icons circle blue">schedule</i>
-                            <span class="title">Assigned</span>
-                            <p>at done_date[0]</p>
-                        </li>
                     </ul>
                 </div>
-                <img src="./workflow-demo.svg">
             </div>
-            <div class="right grey-text">
+            <div class="row right grey-text">
                 click on the flow graph to trigger a state transition
             </div>
         </div>
@@ -83,19 +75,181 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.5.1/mermaid.min.js"></script>
+    <script src="../util.js"></script>
     <script>
         M.AutoInit();
-        M.Chips.init(assignChip, {
-            placeholder: 'assign this issue to...',
-            secondaryPlaceholder: '+assignee',
-            autocompleteOptions: {
-                data: {
-                    'user_name[0]': null,
-                    'user_name[1]': null,
-                    'user_name[2]': null,
-                },
-            },
-        });
+
+        const issue_id = new URLSearchParams(location.search).get('issue_id') | 0;
+        if (!issue_id) throw new TypeError('issue_id unknown');
+
+        const store = { status: {}, transition: {}, reporter_id: {}, autocomplete: [], project: null, issue: null };
+
+        (async () => {
+            // store
+            store.issue = (await (await fetch(urlTmpl`/issue/findIssueById/${issue_id}`, { headers: headersDefault })).json())[0];
+            const { create_date, current_status_id, issue_description, issue_title, project_id, reporter_id } = store.issue;
+            store.project = await (await fetch(urlTmpl`/project/findProjectById/${project_id}`, { headers: headersDefault })).json();
+            const { creator_id, project_name } = store.project;
+            for (const e of await (await fetch(urlTmpl`/status/findStatusByProjectId/${project_id}`, { headers: headersDefault })).json()) {
+                const { status_id, status_name } = e;
+                store.status[status_id] = e;
+            }
+            for (const { status_id, status_type } of await (await fetch(urlTmpl`/status/findSpecialStatusByProjectId/${project_id}`, { headers: headersDefault })).json()) {
+                const e = store.status[status_id];
+                if (e) e.status_type = status_type;
+            }
+            for (const e of await (await fetch(urlTmpl`/status/findTransitionByProjectId/${project_id}`, { headers: headersDefault })).json()) {
+                const { transition_id } = e;
+                store.transition[transition_id] = e;
+            }
+
+            const json = await (await fetch(urlTmpl`/issue/findIssueByProjectId/${project_id}`, { headers: headersDefault })).json();
+            await Promise.all(json.map(async e => {
+                const { reporter_id } = e;
+                const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${reporter_id}`, { headers: headersDefault })).json();
+                store.reporter_id[user_name] = reporter_id;
+                store.autocomplete.push(user_name);
+            }))
+
+            // header
+            {
+                const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${reporter_id}`, { headers: headersDefault })).json();
+                document.getElementsByClassName('breadcrumb')[0].textContent = (await (await fetch(urlTmpl`/user/findUserById/${creator_id}`, { headers: headersDefault })).json()).user_name;
+                document.getElementsByClassName('breadcrumb')[1].textContent = project_name;
+                document.getElementsByClassName('breadcrumb')[1].href = `../project/dashboard.html?project_id=${project_id}`;
+                document.getElementsByClassName('breadcrumb')[2].textContent = `#${issue_id}`;
+                document.getElementsByClassName('breadcrumb')[2].href = `./detail.html?issue_id=${issue_id}`;
+                document.getElementsByClassName('nav-content')[1].children[0].textContent = issue_title;
+                document.getElementsByClassName('nav-content')[1].children[1].textContent = issue_description;
+                document.getElementsByClassName('nav-content')[1].children[2].textContent = `issue#${issue_id} created by user#${reporter_id} on ${new Date(create_date).toDateString()}`;
+                document.getElementsByClassName('btn-floating btn-large halfway-fab')[0].href = `./create.html?issue_id=${issue_id}`;
+                document.getElementsByClassName('fixed-action-btn')[0].children[0].href = `./create.html?issue_id=${issue_id}`;
+            }
+
+            // history 
+            {
+                const json = (await (await fetch(urlTmpl`/issue/getIssueHistory/${issue_id}`, { headers: headersDefault })).json())
+                    .map(e => (e.done_date = new Date(e.done_date), e))
+                    .sort((e, { done_date }) => done_date - e.done_date);
+
+                document.getElementsByClassName('collection')[0].innerHTML = (await Promise.all(json.map(async e => {
+                    const { assignee_id, done_date, transition_id } = e;
+                    const { end_status_id } = store.transition[transition_id];
+                    return htmlTmpl`
+                    <li class="collection-item avatar">
+                        <i class="material-icons circle ${store.status[end_status_id].status_type === 'OPEN' ? 'green' : store.status[end_status_id].status_type === 'CLOSED' ? 'grey' : 'blue'}">
+                            ${store.status[end_status_id].status_type === 'OPEN' ? 'error_outline' : store.status[end_status_id].status_type === 'CLOSED' ? 'done' : 'schedule'}
+                        </i>
+                        <span class="title">${store.status[end_status_id].status_name}</span>
+                        <p>by user#${assignee_id} on ${done_date.toISOString()}</p>
+                    </li>
+                `;
+                }))).join('') + htmlTmpl`
+                    <li class="collection-item avatar">
+                        <i class="material-icons circle green">error_outline</i>
+                        <span class="title">${Object.values(store.status).find(({ status_type }) => status_type === 'OPEN').status_name}</span>
+                        <p>by user#${creator_id} on ${new Date(create_date).toISOString()}</p>
+                    </li>
+                `;
+            }
+
+            // assignChip
+            {
+                const data = {};
+                for (const e of store.autocomplete) {
+                    data[e] = null;
+                }
+                M.Chips.init(assignChip, {
+                    placeholder: 'assign to...',
+                    secondaryPlaceholder: '+assignee',
+                    autocompleteOptions: {
+                        minLength: 0,
+                        data,
+                    },
+                });
+            }
+
+            // flow
+            {
+                const render = await new Promise(resolve => mermaid.render(
+                    'project_workflow_preview_svg',
+                    `
+                        graph TD
+                        classDef default opacity:0.4;
+                        classDef current_status_id stroke:black,stroke-width:4px
+                        classDef end_status_id stroke:black,cursor:pointer
+                        classDef end_status_id:hover stroke-width:4px
+                        ${Object.values(store.transition).map(({ start_status_id, end_status_id }) => {
+                        if (start_status_id === current_status_id) {
+                            return `${start_status_id}[${store.status[start_status_id].status_name}] ==> ${end_status_id}[${store.status[end_status_id].status_name}]`;
+                        }
+                        else {
+                            return `${start_status_id}[${store.status[start_status_id].status_name}] -.-> ${end_status_id}[${store.status[end_status_id].status_name}]`;
+                        }
+                    }).join('\n')}
+                        class ${current_status_id} current_status_id;
+                        ${Object.values(store.transition)
+                        .filter(({ start_status_id }) => start_status_id === current_status_id)
+                        .map(({ end_status_id }) => `class ${end_status_id} end_status_id`)
+                        .join('\n')}
+                    `,
+                    resolve
+                ));
+                project_workflow_preview.innerHTML = render;
+            }
+        })();
+
+        project_workflow_preview.onclick = async ({ target }) => {
+            const textContent = target.closest('.node')?.getElementsByTagName('foreignObject')?.[0]?.getElementsByTagName('div')?.[0]?.textContent;
+            if (!textContent) return;
+            const find = Object.values(store.status).find(({ status_name }) => status_name === textContent);
+            if (!find) return;
+            const { message } = await (await fetch(urlTmpl`/issue/addIssueHistory/${store.issue.issue_id}/${its.user_id}/${
+                Object.values(store.transition).find(({ start_status_id, end_status_id }) => start_status_id === store.issue.current_status_id && end_status_id === find.status_id).transition_id
+                }`, {
+                method: form.method,
+                headers: headersDefault,
+            })).json();
+            if (message) return M.toast({ html: htmlTmpl`${message}` });
+
+            const body = await fetch(urlTmpl`/issue/updateIssueById/${store.issue.issue_id}`, {
+                method: 'put',
+                body: new URLSearchParams({ ...store.issue, current_status_id: find.status_id }),
+                headers: headersDefault,
+            }).catch(() => ({}));
+
+            if (body.ok === false) {
+                const text = await body.text();
+                try {
+                    return M.toast({ html: htmlTmpl`${JSON.parse(text).message}` });
+                }
+                catch {
+                    return M.toast({ html: htmlTmpl`${text || body.statusText}` });
+                }
+            }
+            else if (body.ok === undefined) {
+                return M.toast({ html: 'Network Error' });
+            }
+
+            M.toast({ html: 'Success' });
+            await sleep(2000);
+            location.reload();
+        };
+
+        const form = document.getElementsByTagName('form')[0];
+
+        form.onsubmit = e => {
+            e.preventDefault();
+
+            return Promise.all(M.Chips.getInstance(assignChip).chipsData.map(async ({ tag }) => {
+                const { message } = await (await fetch(urlTmpl`/user/assignIssue/${its.user_id}/${store.reporter_id[tag] ?? tag}/${issue_id}`, {
+                    method: form.method,
+                    headers: headersDefault,
+                })).json();
+                if (message) M.toast({ html: htmlTmpl`${message}` });
+            }));
+        };
     </script>
 </body>
 
