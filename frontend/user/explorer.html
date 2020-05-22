@@ -17,7 +17,7 @@
 <body>
     <nav class="light-blue nav-extended" role="navigation">
         <div class="nav-wrapper container">
-            <a href="" class="brand-logo">Issue Tracking</a>
+            <a href="/frontend" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
                 <li class="active"><a href="">Explorer</a></li>
                 <li><a href="./register.html">Profile</a></li>
@@ -70,20 +70,21 @@
         })();
 
         (async () => {
-            const json = await (await fetch(urlTmpl`/project/getUserProjects/${its.user_id}`, { headers: headersDefault, })).json();
+            const json = await (await fetch(urlTmpl`/project/getUserProjects/${its.user_id}`, { headers: headersDefault })).json();
             document.getElementsByClassName('collection')[0].innerHTML = (await Promise.all(json.map(async ({ project_id }) => {
                 const json = await (await fetch(urlTmpl`/project/findProjectById/${project_id}`, { headers: headersDefault })).json();
                 const { creator_id, project_name, project_description, create_date } = json;
                 return htmlTmpl`
-                <li class="collection-item avatar">
-                    <a href="../project/dashboard.html?project_id=${project_id}">
-                    <i class="material-icons circle">folder</i>
-                    <span class="title">${project_name}</span>
-                    </a>
-                    <p>project#${project_id} (${creator_id === its.user_id ? 'creator' : 'contributor'})</p>
-                    <p>${project_description}</p>
-                    <a class="secondary-content" onclick="M.toast({ html: 'Not implemented' });"><i class="material-icons">star_outline</i></a>
-                </li>`;
+                    <li class="collection-item avatar">
+                        <a href="../project/dashboard.html?project_id=${urlTmpl`${project_id}`}">
+                        <i class="material-icons circle">folder</i>
+                        <span class="title">${project_name}</span>
+                        </a>
+                        <p>project#${project_id} (${creator_id === its.user_id ? 'creator' : 'contributor'})</p>
+                        <p>${project_description}</p>
+                        <a class="secondary-content" onclick="M.toast({ html: 'Not implemented' });"><i class="material-icons">star_outline</i></a>
+                    </li>
+                `;
             }))).join('');
         })();
     </script>

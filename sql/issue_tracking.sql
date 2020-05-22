@@ -15,10 +15,10 @@ CREATE TABLE user (
 );
 
 INSERT INTO user(user_email, user_name, user_alias, user_password, create_date) VALUES
-('user1@email.com','test_user_1','user1', AES_DECRYPT('user_password1',"project"),'2020-01-01 10:10:10'),
-('user2@email.com','test_user_2','user2', AES_DECRYPT('user_password2',"project"),'2020-01-02 10:10:10'),
-('user3@email.com','test_user_3','user3', AES_DECRYPT('user_password3',"project"),'2020-01-03 10:10:10'),
-('user4@email.com','test_user_4','user4', AES_DECRYPT('user_password4',"project"),'2020-01-04 10:10:10'),
+('user1@email.com','test_user_1','user1', AES_ENCRYPT('user_password1',"project"),'2020-01-01 10:10:10'),
+('user2@email.com','test_user_2','user2', AES_ENCRYPT('user_password2',"project"),'2020-01-02 10:10:10'),
+('user3@email.com','test_user_3','user3', AES_ENCRYPT('user_password3',"project"),'2020-01-03 10:10:10'),
+('user4@email.com','test_user_4','user4', AES_ENCRYPT('user_password4',"project"),'2020-01-04 10:10:10'),
 
 ('boss@amazon.com','test_user_5','Jeff Bezos', 'amazon_boss_password','2020-01-05 10:10:10'),
 ('boss@apple.com','test_user_6','Steve Jobs', 'apple_boss_password','2020-01-06 10:10:10'),
@@ -164,6 +164,7 @@ CREATE TABLE issue (
 
 INSERT INTO issue(project_id, reporter_id, current_status_id, issue_title, issue_description, create_date) VALUES
 (1,1,1,'Amazon issue 1', 'Amazon has some issues.', '2020-01-01 10:10:12'),
+(1,2,2,'Amazon issue 1', 'Amazon has some issues.', '2020-01-01 10:10:12'),
 (2,2,6,'Apple issue 1', 'Apple has some issues.', '2020-01-02 10:10:12'),
 (3,3,11,'Facebook issue 1', 'Facebook has some issues.', '2020-01-03 10:10:12'),
 (4,4,16,'Microsoft issue 1', 'Microsoft has some issues.', '2020-01-04 10:10:12');

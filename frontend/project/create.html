@@ -17,7 +17,7 @@
 <body>
     <nav class="light-blue nav-extended" role="navigation">
         <div class="nav-wrapper container">
-            <a href="" class="brand-logo">Issue Tracking</a>
+            <a href="/frontend" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
                 <li><a href="/frontend/user/explorer.html">Explorer</a></li>
                 <li><a href="/frontend/user/register.html">Profile</a></li>
@@ -114,15 +114,15 @@
         mermaid.initialize({ securityLevel: 'loose' });
         project_workflow.oninput = async () => {
             project_workflow.setCustomValidity('invalid workflow description');
-            const registry = { transitions: [], status: {} };
+            const store = { transitions: [], status: {} };
             project_workflow_hightlighter.innerHTML = project_workflow.value.split(/\r?\n/).map(e => {
-                const groups = /(?<start_status>[\w\d]+)(?:\[(?<start_status_text>[\w\d]+)\])? --> (?<end_status>[\w\d]+)(?:\[(?<end_status_text>[\w\d]+)\])?/.exec(e)?.groups;
+                const groups = /(?<start_status>[\w\d]+)(?:\[(?<start_status_text>[\w\d ]+)\])? --> (?<end_status>[\w\d]+)(?:\[(?<end_status_text>[\w\d ]+)\])?/.exec(e)?.groups;
                 if (!groups) return htmlTmpl`<span class="error">${e}</span>`;
 
                 const { start_status, start_status_text, end_status, end_status_text } = groups;
-                registry.status[start_status] = start_status_text ?? start_status;
-                registry.status[end_status] = end_status_text ?? end_status;
-                registry.transitions.push([start_status, end_status]);
+                store.status[start_status] = start_status_text ?? start_status;
+                store.status[end_status] = end_status_text ?? end_status;
+                store.transitions.push([start_status, end_status]);
 
                 return [
                     htmlTmpl`<span class="start_status">${start_status}</span>`,
@@ -132,25 +132,25 @@
                 ].join('');
             }).join('\n');
 
-            if (!registry.status['open']) return [project_workflow_preview.innerHTML = htmlTmpl`<p class="red-text">missing open state</p>`, registry];
-            if (!registry.status['closed']) return [project_workflow_preview.innerHTML = htmlTmpl`<p class="red-text">missing closed state</p>`, registry];
+            if (!store.status['open']) return [project_workflow_preview.innerHTML = htmlTmpl`<p class="red-text">missing open state</p>`, store];
+            if (!store.status['closed']) return [project_workflow_preview.innerHTML = htmlTmpl`<p class="red-text">missing closed state</p>`, store];
 
             try {
                 const render = await new Promise(resolve => mermaid.render(
                     'project_workflow_preview_svg',
-                    `graph TD\n${registry.transitions.map(([start_status, end_status]) => {
-                        const start_status_text = registry.status[start_status];
-                        const end_status_text = registry.status[end_status];
+                    `graph TD\n${store.transitions.map(([start_status, end_status]) => {
+                        const start_status_text = store.status[start_status];
+                        const end_status_text = store.status[end_status];
                         return `${start_status}${start_status_text ? `[${start_status_text}]` : ''} --> ${end_status}${end_status_text ? `[${end_status_text}]` : ''}`
                     }).join('\n')}`,
                     resolve,
                 ));
                 project_workflow.setCustomValidity('');
-                return [project_workflow_preview.innerHTML = render, registry];
+                return [project_workflow_preview.innerHTML = render, store];
             }
             catch (e) {
                 if (e.str) {
-                    return [project_workflow_preview.innerHTML = htmlTmpl`<p class="text-red">${e.str}</p>`, registry];
+                    return [project_workflow_preview.innerHTML = htmlTmpl`<p class="text-red">${e.str}</p>`, store];
                 }
                 else {
                     throw e;
@@ -195,8 +195,8 @@
             const json = await body.json();
             project_id.value = json.id;
 
-            const [, registry] = await project_workflow.oninput();
-            await Promise.all(Object.entries(registry.status).map(async ([status, status_name]) => {
+            const [, store] = await project_workflow.oninput();
+            await Promise.all(Object.entries(store.status).map(async ([status, status_name]) => {
                 const json = await (await fetch('/status/createStatus', {
                     method: 'post',
                     body: new URLSearchParams({

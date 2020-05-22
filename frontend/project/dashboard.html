@@ -17,7 +17,7 @@
 <body>
     <nav class="light-blue nav-extended" role="navigation">
         <div class="nav-wrapper container">
-            <a href="" class="brand-logo">Issue Tracking</a>
+            <a href="/frontend" class="brand-logo">Issue Tracking</a>
             <ul class="right hide-on-med-and-down">
                 <li><a href="/frontend/user/explorer.html">Explorer</a></li>
                 <li><a href="/frontend/user/register.html">Profile</a></li>
@@ -40,11 +40,11 @@
     </nav>
 
     <div class="section">
-        <form method="GET" class="container" action="/api">
+        <form method="GET" class="container" action="/issue/Search">
             <div style="display: flex; align-items: center; flex-wrap: wrap">
                 <i class="material-icons prefix">filter_list</i>
                 <div class="input-field" style="flex-grow: 100; margin-right: 1rem;">
-                    <input id="filterInput" type="text" class="autocomplete" autocomplete="off">
+                    <input id="filterInput" type="text" class="autocomplete validate" autocomplete="off">
                 </div>
                 <div>
                     <button class="btn waves-effect waves-light" type="button">status</button>
@@ -75,32 +75,110 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
     <script src="../util.js"></script>
     <script>
         M.AutoInit();
-        
+
         const project_id = new URLSearchParams(location.search).get('project_id') | 0;
         if (!project_id) throw new TypeError('project_id unknown');
 
+        const store = { status: {}, issue: {}, reporter_id: {}, autocomplete: [] };
+
+        // header
         (async () => {
-            const json = await (await fetch(urlTmpl`/project/findProjectById/${project_id}`, { headers: headersDefault })).json();
-            const { project_name, creator_id, project_description, create_date } = json;
-            document.getElementsByClassName('breadcrumb')[0].textContent = its.user_name;
+            const { project_name, creator_id, project_description, create_date } = await (await fetch(urlTmpl`/project/findProjectById/${project_id}`, { headers: headersDefault })).json();
+            const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${creator_id}`, { headers: headersDefault })).json();
+            document.getElementsByClassName('breadcrumb')[0].textContent = user_name;
             document.getElementsByClassName('breadcrumb')[1].textContent = project_name;
             document.getElementsByClassName('nav-content')[1].children[0].textContent = project_name;
             document.getElementsByClassName('nav-content')[1].children[1].textContent = project_description;
             document.getElementsByClassName('nav-content')[1].children[2].textContent = `project#${project_id} created by user#${creator_id} on ${new Date(create_date).toDateString()}`;
         })();
 
+        // store
+        (async () => {
+            for (const e of await (await fetch(urlTmpl`/status/findStatusByProjectId/${project_id}`, { headers: headersDefault })).json()) {
+                const { status_id, status_name } = e;
+                store.status[status_id] = e;
+                store.autocomplete.push(`status:${status_name.includes(' ') ? `"${status_name}"` : status_name}`);
+            };
+            for (const { status_id, status_type } of await (await fetch(urlTmpl`/status/findSpecialStatusByProjectId/${project_id}`, { headers: headersDefault })).json()) {
+                const e = store.status[status_id];
+                if (e) e.status_type = status_type;
+            };
 
-        M.Autocomplete.getInstance(filterInput).updateData({
-            'status:"Status 1"': null,
-            'status:"Status 2"': null,
-            'status:"Status 3"': null,
-            'reporter:"Reporter 1"': null,
-            'reporter:"Reporter 2"': null,
-            'reporter:"Reporter 3"': null,
-        });
+            const json = await (await fetch(urlTmpl`/issue/findIssueByProjectId/${project_id}`, { headers: headersDefault })).json();
+            await Promise.all(json.map(async e => {
+                const { issue_id, issue_title, issue_description, create_date, current_status_id, reporter_id } = e;
+                const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${reporter_id}`, { headers: headersDefault })).json();
+                store.issue[issue_id] = e;
+                store.reporter_id[user_name] = reporter_id;
+                store.autocomplete.push(...(issue_title.match(/[\d\w]+/g) ?? []), ...(issue_description.match(/[\d\w]+/g) ?? []));
+                store.autocomplete.push(`reporter:${user_name}`);
+                store.autocomplete.push(`assignee:${user_name}`);
+            }))
+            await form.onsubmit(new Event('submit'));
+            filterInput.oninput();
+        })();
+
+        const form = document.getElementsByTagName('form')[0];
+
+        for (const e of form.getElementsByClassName('btn')) {
+            e.onclick = () => {
+                filterInput.value += `${filterInput.value.length ? ' ' : ''}${e.textContent}:`;
+                filterInput.dispatchEvent(new Event('input'));
+                filterInput.dispatchEvent(new Event('click'));
+                filterInput.focus();
+            };
+        }
+
+        M.Autocomplete.getInstance(filterInput).options.minLength = 0;
+
+        filterInput.oninput = () => {
+            const match = filterInput.value.match(/(?:[^"\s]|(?:"[^"]+"))+/g);
+            const lastIndexOf = match && filterInput.value.lastIndexOf(match[match.length - 1]);
+            const updateData = {};
+            for (const e of store.autocomplete) {
+                updateData[`${filterInput.value.slice(0, lastIndexOf)}${e}`] = null;
+            }
+            M.Autocomplete.getInstance(filterInput).updateData(updateData);
+        }
+
+        form.onsubmit = async e => {
+            e.preventDefault();
+
+            const match = filterInput.value.match(/(?:[^"\s]|(?:"[^"]+"))+/g) || [];
+            const search = {};
+            for (const e of match) {
+                const match = e.match(/^(?<match>[\w\d]+):/);
+                if (match) {
+                    search[match.groups.match] = e.slice(match[0].length).replace(/(^"|"$)/g, '');;
+                }
+                else {
+                    search['issueTitle'] = search['issueDescription'] = e.replace(/(^"|"$)/g, '');;
+                }
+            }
+
+            const json = await (await fetch(urlTmpl`/issue/Search/${project_id}?issueTitle=${search['issueTitle'] ?? ''}&issueDescription=${search['issueDescription'] ?? ''}&status=${search['status'] ?? ''}&asignee=${store.reporter_id[search['asignee']] ?? ''}&reporter=${store.reporter_id[search['reporter']] ?? ''}`, { headers: headersDefault })).json();
+            document.getElementsByClassName('collection')[0].innerHTML = (await Promise.all(json.map(async e => {
+                const { issue_id, issue_title, issue_description, create_date, current_status_id, reporter_id } = e;
+                const { user_name } = await (await fetch(urlTmpl`/user/findUserById/${reporter_id}`, { headers: headersDefault })).json();
+                return htmlTmpl`
+                    <li class="collection-item avatar">
+                        <a href="../issue/detail.html?issue_id=${urlTmpl`${issue_id}`}">
+                        <i class="material-icons circle ${store.status[current_status_id].status_type === 'OPEN' ? 'green' : store.status[current_status_id].status_type === 'CLOSED' ? 'grey' : 'blue'}">
+                            ${store.status[current_status_id].status_type === 'OPEN' ? 'error_outline' : store.status[current_status_id].status_type === 'CLOSED' ? 'done' : 'schedule'}
+                        </i>
+                        <span class="title">${issue_title}</span>
+                        </a>
+                        <p>${issue_description}</p>
+                        <p>by @${user_name} on ${new Date(create_date).toDateString()}</p>
+                        <a class="secondary-content" onclick="M.toast({ html: 'Not implemented' });"><i class="material-icons grey-text">add_alert</i></a>
+                    </li>
+                `;
+            }))).join('');
+        }
     </script>
 </body>
 
